@@ -25,40 +25,25 @@
       border: 1px solid rgba(255, 255, 255, .12);
     }
 
-    /* ปรับแต่งตำแหน่งของรูปภาพให้แยกสำหรับมือถือและ Desktop */
     .employee-wrapper {
-      position: relative; /* สำหรับมือถือ: ให้รูปภาพแสดงต่อท้ายกล่องข้อความ เลื่อนดูได้ไม่โดนทับ */
+      position: fixed;
+      bottom: 0;
+      left: 0;
       width: 100%;
-      height: 45vh; 
+      height: 65vh;
       display: flex;
       justify-content: center;
       align-items: flex-end;
       pointer-events: none; 
       z-index: 1;
-      margin-top: 1rem;
     }
 
     .employee-wrapper img {
-      height: 100%;
-      max-height: 100%;
+      height: 70%;
+      max-height: 85vh;
       object-fit: contain;
       object-position: bottom;
       transition: all 0.5s ease-in-out;
-    }
-
-    /* สำหรับหน้าจอ Desktop/แนวนอน: ให้รูปล็อกติดขอบล่างตามเดิม */
-    @media (min-width: 768px) {
-      .employee-wrapper {
-        position: fixed; 
-        bottom: 0;
-        left: 0;
-        height: 65vh;
-        margin-top: 0;
-      }
-      .employee-wrapper img {
-        height: 70%;
-        max-height: 85vh;
-      }
     }
 
     .content {
@@ -145,8 +130,7 @@
         <div class="text-blue-200 text-[11px] font-bold tracking-widest uppercase mb-3 text-center">
           ทีมงานหลักประจำวัน (Daily Team Overview)
         </div>
-        <!-- เพิ่มระยะขอบ pt-4 และ pb-4 เพื่อป้องกันการตัดขอบวงกลมตอนเมาส์ชี้ -->
-        <div id="overviewContainer" class="flex gap-4 overflow-x-auto hide-scrollbar snap-x pt-4 pb-4 px-2 justify-start sm:justify-center">
+        <div id="overviewContainer" class="flex gap-4 overflow-x-auto hide-scrollbar snap-x pb-2 justify-start sm:justify-center">
           <!-- ข้อมูลจะถูกเติมด้วย Javascript -->
         </div>
       </div>
@@ -154,8 +138,7 @@
 
     <!-- คอลัมน์ขวา: การ์ดแสดงข้อมูลพนักงานหลัก -->
     <div class="relative z-20 h-full">
-      <!-- นำ mb-[25vh] ออก เพื่อไม่ให้เกิดช่องว่างแปลกๆ บนมือถือ -->
-      <div class="glass rounded-[32px] p-8 text-white shadow-2xl h-full flex flex-col relative z-20">
+      <div class="glass rounded-[32px] p-8 text-white shadow-2xl mb-[25vh] md:mb-0 h-full flex flex-col">
         
         <div class="self-start">
           <div id="shiftBadge" class="inline-block text-white text-[11px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-5 shadow-md hidden transition-all">
@@ -220,7 +203,7 @@
   window.onload = function() {
     setDefaultDate();
     autoSelectShift();
-    fetchLeadData(); 
+    fetchLeadData(); // ดึงข้อมูลทันทีเมื่อโหลดหน้าเว็บ
   };
 
   function setDefaultDate() {
@@ -264,11 +247,13 @@
     }
     statusMsg.classList.add('hidden');
 
+    // ขึ้นสถานะกำลังโหลด
     document.getElementById("nameThDisplay").innerText = "กำลังดึงข้อมูล...";
     document.getElementById("nameEnDisplay").innerText = "Loading from database...";
     document.getElementById("overviewContainer").innerHTML = "<div class='text-white/50 text-xs w-full text-center py-4'>กำลังดาวน์โหลดข้อมูลจาก Google Sheets...</div>";
     document.getElementById("profileImage").style.opacity = "0.5";
 
+    // เรียก API ด้วย fetch สำหรับเว็บที่รันบน Github Pages
     const requestUrl = `${WEB_APP_API_URL}?date=${selectedDate}`;
     
     fetch(requestUrl)
@@ -277,6 +262,7 @@
         return response.json();
       })
       .then(data => {
+        // ตรวจสอบว่า API ส่ง Error กลับมาหรือไม่
         if (data.error) {
            throw new Error(data.error);
         }
@@ -298,6 +284,7 @@
     const container = document.getElementById("overviewContainer");
     container.innerHTML = "";
 
+    // หากไม่มีข้อมูลใดๆ ในวันนั้นเลย
     if (Object.keys(currentDailyData).length === 0) {
        container.innerHTML = "<div class='text-white/50 text-xs w-full text-center py-4'>ไม่พบข้อมูลตารางเวรในวันที่เลือก</div>";
        return;
@@ -309,9 +296,8 @@
       const name = personData && personData.nameTh ? personData.nameTh.split(' ')[0] : "ไม่มีเวร";
       const opacity = personData ? "opacity-100" : "opacity-50";
 
-      // เพิ่ม origin-center และ transform-gpu ให้การขยายภาพสมูทและออกมาจากกึ่งกลาง
       const cardHtml = `
-        <div class="flex flex-col items-center min-w-[70px] snap-center cursor-pointer hover:scale-105 transition-transform origin-center transform-gpu" onclick="selectTimeAndRender('${slot.key}')">
+        <div class="flex flex-col items-center min-w-[70px] snap-center cursor-pointer hover:scale-105 transition-transform" onclick="selectTimeAndRender('${slot.key}')">
           <div class="w-[50px] h-[50px] rounded-full overflow-hidden border-2 border-white/20 shadow-md ${opacity}">
              <img src="${imgUrl}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/333/666?text=NoPic'">
           </div>
