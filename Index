@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <base target="_top">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leaderboard</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -280,33 +280,19 @@
     document.getElementById("overviewContainer").innerHTML = "<div class='text-white/50 text-xs w-full text-center py-4'>กำลังดึงข้อมูล...</div>";
     document.getElementById("profileImage").style.opacity = "0.5";
 
-    if (typeof google !== 'undefined' && google.script) {
-      google.script.run
-        .withSuccessHandler(function(data) {
-           currentDailyData = data || {};
-           renderOverview();
-           renderMainCard();
-        })
-        .withFailureHandler(function(error) {
-           document.getElementById("nameThDisplay").innerText = "เกิดข้อผิดพลาด";
-           statusMsg.innerText = "Error: " + error.message;
-           statusMsg.classList.remove('hidden');
-        })
-        .getDailyScheduleData(selectedDate);
-    } else {
-      // Mockup สำหรับการ Preview บนเว็บ
-      setTimeout(() => {
-        currentDailyData = {
-          "09:00-09:30": { nameTh: "สมชาย ลีดเดอร์", imageUrl: "https://placehold.co/100x100/blue/white?text=Brief", nameEn: "Somchai Leader", teamTel: "111", personalTel: "081-111" },
-          "05:30-09:30": { nameTh: "สมหญิง เช้าแรก", imageUrl: "https://placehold.co/100x100/orange/white?text=M1", nameEn: "Somying Morning", teamTel: "222", personalTel: "081-222" },
-          "09:30-12:00": { nameTh: "สมฤดี เช้าสอง", imageUrl: "https://placehold.co/100x100/orange/white?text=M2", nameEn: "Somrudee Morning", teamTel: "333", personalTel: "081-333" },
-          "14:30-17:30": { nameTh: "นายวัฒนา โกศลวิจิตร", imageUrl: "https://placehold.co/100x100/purple/white?text=N1", nameEn: "Wattana Kosalawit", teamTel: "0811426801", personalTel: "0965625909" },
-          "17:30-21:00": { nameTh: "สมปอง ดึกสอง", imageUrl: "https://placehold.co/100x100/purple/white?text=N2", nameEn: "Sompong Night", teamTel: "555", personalTel: "081-555" },
-        };
-        renderOverview();
-        renderMainCard();
-      }, 1000);
-    }
+    // สำหรับใช้บน GitHub Pages เราจะใช้ข้อมูลจำลอง (Mockup) ทันที
+    // ถ้าต้องการใช้ร่วมกับ Google Sheets หรือ API ในอนาคต ให้ใช้ Fetch API ตรงนี้ครับ
+    setTimeout(() => {
+      currentDailyData = {
+        "09:00-09:30": { nameTh: "สมชาย ลีดเดอร์", imageUrl: "https://placehold.co/100x100/blue/white?text=Brief", nameEn: "Somchai Leader", teamTel: "111", personalTel: "081-111" },
+        "05:30-09:30": { nameTh: "สมหญิง เช้าแรก", imageUrl: "https://placehold.co/100x100/orange/white?text=M1", nameEn: "Somying Morning", teamTel: "222", personalTel: "081-222" },
+        "09:30-12:00": { nameTh: "สมฤดี เช้าสอง", imageUrl: "https://placehold.co/100x100/orange/white?text=M2", nameEn: "Somrudee Morning", teamTel: "333", personalTel: "081-333" },
+        "14:30-17:30": { nameTh: "นายวัฒนา โกศลวิจิตร", imageUrl: "https://placehold.co/100x100/purple/white?text=N1", nameEn: "Wattana Kosalawit", teamTel: "0811426801", personalTel: "0965625909" },
+        "17:30-21:00": { nameTh: "สมปอง ดึกสอง", imageUrl: "https://placehold.co/100x100/purple/white?text=N2", nameEn: "Sompong Night", teamTel: "555", personalTel: "081-555" },
+      };
+      renderOverview();
+      renderMainCard();
+    }, 800); // ดีเลย์ 0.8 วินาทีจำลองการโหลดข้อมูล
   }
 
   // ฟังก์ชันวาดรูป 5 คน
