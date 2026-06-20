@@ -1,937 +1,850 @@
 <!DOCTYPE html>
-<html lang="th">
+
+<html>
+
 <head>
+
   <meta charset="utf-8">
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Leaderboard & Daily Shift Management</title>
+
+  <title>Leaderboard</title>
+
   
+
   <script src="https://cdn.tailwindcss.com"></script>
+
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
+
+
   <style>
+
     body {
+
       font-family: 'Kanit', sans-serif;
+
       margin: 0;
+
       overflow-x: hidden;
+
       overflow-y: auto; 
+
       min-height: 100vh;
-      background: radial-gradient(circle at center bottom, #1e40af 0%, #1e3a8a 40%, #0f172a 100%);
+
+      background: radial-gradient(circle at center bottom, #2563eb 0%, #1e3a8a 35%, #0f172a 100%);
+
       padding-bottom: 50px;
+
     }
+
+
 
     .glass {
+
       background: rgba(255, 255, 255, .06);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+
+      backdrop-filter: blur(16px);
+
       border: 1px solid rgba(255, 255, 255, .12);
+
     }
 
-    .glass-input {
-      background: rgba(255, 255, 255, .08);
-      border: 1px solid rgba(255, 255, 255, .15);
-      color: white;
-      transition: all 0.3s ease;
-    }
 
-    .glass-input:focus {
-      background: rgba(255, 255, 255, .15);
-      border-color: #60a5fa;
-      box-shadow: 0 0 15px rgba(96, 165, 250, 0.3);
-    }
 
     .employee-wrapper {
+
       position: fixed;
+
       bottom: 0;
+
       left: 0;
+
       width: 100%;
-      height: 55vh;
+
+      height: 65vh;
+
       display: flex;
+
       justify-content: center;
+
       align-items: flex-end;
+
       pointer-events: none; 
+
       z-index: 1;
+
     }
+
+
 
     .employee-wrapper img {
-      height: 90%;
-      max-height: 55vh;
+
+      height: 70%;
+
+      max-height: 85vh;
+
       object-fit: contain;
+
       object-position: bottom;
-      transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-      transform: translateY(20px);
-      opacity: 0;
+
+      transition: all 0.5s ease-in-out;
+
     }
 
-    .employee-wrapper img.active {
-      transform: translateY(0);
-      opacity: 1;
-    }
+
 
     .content {
+
       position: relative;
+
       z-index: 10;
+
       width: 100%;
-      max-width: 1100px;
+
+      max-width: 1000px; /* ขยายขนาดความกว้างสูงสุดให้รองรับ 2 คอลัมน์ */
+
       margin: auto;
+
       padding: 24px;
+
     }
+
+
 
     .glow {
+
       position: absolute;
-      width: 450px;
-      height: 450px;
-      bottom: -150px;
+
+      width: 400px;
+
+      height: 400px;
+
+      bottom: -100px;
+
       border-radius: 50%;
-      background: rgba(59, 130, 246, .25);
-      filter: blur(100px);
+
+      background: rgba(59, 130, 246, .35);
+
+      filter: blur(80px);
+
       z-index: -1;
+
     }
+
+
 
     input[type="date"]::-webkit-calendar-picker-indicator {
+
       filter: invert(1);
+
     }
-    
+
     select option {
+
       background-color: #1e3a8a;
+
       color: white;
+
     }
+
     
+
+    /* สไตล์สำหรับ Scroll แนวนอนซ่อน Scrollbar */
+
     .hide-scrollbar::-webkit-scrollbar { display: none; }
+
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-    /* Custom Animations */
-    @keyframes pulse-slow {
-      0%, 100% { opacity: 0.2; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(1.05); }
-    }
-    .ambient-glow {
-      animation: pulse-slow 8s infinite ease-in-out;
-    }
   </style>
+
 </head>
 
-<body class="text-slate-100">
+
+
+<body>
+
+
 
 <div class="content">
 
-  <!-- Header & Status Bar -->
-  <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-    <div>
-      <div class="text-blue-400 text-xs font-extrabold tracking-[0.3em] uppercase flex items-center gap-2">
-        <span class="inline-block w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse"></span>
-        ระบบตารางปฏิบัติหน้าที่หัวหน้าทีม
-      </div>
-      <div class="text-white text-5xl font-black tracking-tight mt-1">
-        lead<span class="text-blue-500">.</span>
-      </div>
-    </div>
-    
-    <!-- API Indicator Badge -->
-    <div id="connectionStatus" class="glass px-4 py-2 rounded-2xl flex items-center gap-2 text-xs font-semibold shadow-lg">
-      <span class="relative flex h-2 w-2">
-        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-        <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500" id="statusDot"></span>
-      </span>
-      <span id="statusText" class="text-amber-300">กำลังตรวจสอบสถานะการเชื่อมต่อ...</span>
-    </div>
+
+
+  <!-- Header -->
+
+  <div class="mb-6">
+
+    <div class="text-blue-300 text-xs font-bold tracking-[0.3em] uppercase">Leaderboard</div>
+
+    <div class="text-white text-5xl font-black">lead.</div>
+
   </div>
 
-  <!-- Warning for API Failure (Slick banner) -->
-  <div id="apiWarningBanner" class="hidden mb-6 glass border-amber-500/30 bg-amber-950/20 rounded-2xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-    <div class="flex items-center gap-3">
-      <div class="p-2 bg-amber-500/20 text-amber-400 rounded-xl">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-      </div>
-      <div>
-        <h4 class="font-bold text-amber-300 text-sm">สลับเข้าสู่โหมดใช้งานแบบออฟไลน์สำเร็จ</h4>
-        <p class="text-xs text-amber-200/80">เนื่องจากเรียกข้อมูลผ่านเว็บแอปพลิเคชันภายนอกไม่ได้ คุณสามารถแก้ไขและบันทึกข้อมูลตารางเก็บไว้บนเบราว์เซอร์เครื่องนี้ได้โดยตรง</p>
-      </div>
-    </div>
-    <div class="flex gap-2">
-      <button onclick="openGasModal()" class="text-xs bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold px-3 py-1.5 rounded-lg transition-all">
-        ดูวิธีแก้สิทธิ์ GAS CORS
-      </button>
-    </div>
-  </div>
 
-  <!-- Main Grid Layout -->
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 items-stretch mb-12">
+
+  <!-- Grid Layout แยก 2 คอลัมน์สำหรับหน้าจอ Desktop/แนวนอน -->
+
+  <!-- เปลี่ยนเป็น items-stretch เพื่อให้กล่องขวาสูงเท่ากับกล่องซ้ายรวมกัน -->
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 items-stretch">
+
     
-    <!-- Left Column: Search Tools & Team Overview -->
+
+    <!-- คอลัมน์ซ้าย: เครื่องมือค้นหา และ ภาพรวมทีม -->
+
     <div class="flex flex-col gap-6 h-full">
-      
-      <!-- Search Panel -->
-      <div class="glass rounded-[28px] p-6 shadow-xl relative z-20">
-        <div class="flex flex-col sm:flex-row gap-4">
+
+      <!-- ส่วนค้นหา -->
+
+      <div class="glass rounded-[24px] p-5 shadow-lg relative z-20">
+
+        <div class="flex flex-col sm:flex-row gap-4 relative z-20">
+
           
-          <div class="flex-1">
-            <label class="text-blue-300 text-[11px] font-semibold tracking-wider uppercase mb-1.5 block">เลือกวันที่ปฏิบัติงาน (Date)</label>
-            <input type="date" id="dateInput" onchange="fetchLeadData()"
-                   class="w-full glass-input rounded-xl px-3.5 py-2.5 text-sm outline-none cursor-pointer">
-          </div>
 
           <div class="flex-1">
-            <label class="text-blue-300 text-[11px] font-semibold tracking-wider uppercase mb-1.5 block">เลือกช่วงเวลากะ (Shift)</label>
-            <select id="timeInput" onchange="renderMainCard()"
-                    class="w-full glass-input rounded-xl px-3.5 py-2.5 text-sm outline-none cursor-pointer">
-              <option value="05:30-09:30">☀️ 05:30 - 09:30 (กะเช้าหลัก)</option>
-              <option value="09:00-09:30">📋 09:00 - 09:30 (Briefing)</option>
-              <option value="09:30-12:00">☀️ 09:30 - 12:00 (กะเช้าเสริม)</option>
-              <option value="12:00-13:00">🍽️ 12:00 - 13:00 (พักกลางวัน)</option>
-              <option value="13:00-14:30">☀️ 13:00 - 14:30 (กะบ่ายแรก)</option>
-              <option value="14:30-17:30">🌙 14:30 - 17:30 (กะดึกหลัก)</option>
-              <option value="17:30-21:00">🌙 17:30 - 21:00 (กะดึกเสริม)</option>
-            </select>
+
+            <label class="text-blue-300 text-[10px] tracking-wider uppercase mb-1 block">เลือกวันที่ (Date)</label>
+
+            <input type="date" id="dateInput" 
+
+                   class="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white text-sm outline-none focus:border-blue-400 focus:bg-white/20 transition-all cursor-pointer">
+
           </div>
+
+
+
+          <div class="flex-1">
+
+            <label class="text-blue-300 text-[10px] tracking-wider uppercase mb-1 block">เลือกช่วงเวลา (Shift)</label>
+
+            <select id="timeInput" onchange="renderMainCard()"
+
+                    class="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white text-sm outline-none focus:border-blue-400 focus:bg-white/20 transition-all cursor-pointer">
+
+              <option value="05:30-09:30">05:30 - 09:30</option>
+
+              <option value="09:00-09:30">09:00 - 09:30</option>
+
+              <option value="09:30-12:00">09:30 - 12:00</option>
+
+              <option value="12:00-13:00">12:00 - 13:00</option>
+
+              <option value="13:00-14:30">13:00 - 14:30</option>
+
+              <option value="14:30-17:30">14:30 - 17:30</option>
+
+              <option value="17:30-21:00">17:30 - 21:00</option>
+
+            </select>
+
+          </div>
+
+
 
           <div class="flex items-end">
+
             <button onclick="fetchLeadData()" 
-                    class="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-md active:scale-95 flex items-center justify-center gap-2">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-              <span>รีเฟรช</span>
+
+                    class="w-full sm:w-auto bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-5 rounded-xl transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2">
+
+              <span>ค้นหา</span>
+
             </button>
+
           </div>
+
         </div>
-        <div id="statusMessage" class="text-rose-400 text-xs mt-3 hidden text-center font-medium bg-rose-950/30 p-2 rounded-xl border border-rose-500/20"></div>
+
+        <div id="statusMessage" class="text-red-400 text-xs mt-3 hidden text-center"></div>
+
       </div>
 
-      <!-- Team Slots Horizontal Overview -->
-      <div class="glass rounded-[28px] p-5 shadow-xl z-20 relative flex-1 flex flex-col justify-between">
-        <div>
-          <div class="flex justify-between items-center mb-4">
-            <div class="text-blue-200 text-xs font-bold tracking-widest uppercase">
-              ทีมงานหลักประจำวัน (Daily Team Overview)
-            </div>
-            <span class="text-[11px] bg-blue-500/20 text-blue-300 font-semibold px-2 py-0.5 rounded-md">5 กะหลัก</span>
-          </div>
-          
-          <div id="overviewContainer" class="flex gap-3 overflow-x-auto hide-scrollbar snap-x pb-3 justify-start sm:justify-between items-center">
-            <!-- Loading indicator/slots mapped via JS -->
-          </div>
+
+
+      <!-- ส่วนแสดงภาพรวม 5 พนักงาน -->
+
+      <div class="glass rounded-[24px] p-4 shadow-lg z-20 relative flex-1 flex flex-col justify-center">
+
+        <div class="text-blue-200 text-[11px] font-bold tracking-widest uppercase mb-3 text-center">
+
+          ทีมงานหลักประจำวัน (Daily Team Overview)
+
         </div>
 
-        <!-- Quick Manager Action Bar -->
-        <div class="mt-4 pt-4 border-t border-white/10 flex flex-wrap gap-2 justify-between items-center">
-          <div class="text-[11px] text-slate-400 flex items-center gap-1">
-            <svg class="w-3.5 h-3.5 text-blue-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
-            คลิกภาพเพื่อเปลี่ยนเวลาการดูข้อมูลบนหน้าต่างหลัก
-          </div>
-          <div class="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0">
-            <button onclick="openEditorModal()" class="flex-1 sm:flex-initial bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 hover:text-white text-xs font-bold px-3 py-2 rounded-xl transition-all flex items-center justify-center gap-1 border border-blue-500/30">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-              แก้ไขตารางของวันคีย์นี้
-            </button>
-            <button onclick="openGasModal()" class="bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 hover:text-white text-xs font-bold p-2 rounded-xl transition-all border border-indigo-500/30" title="ดูคู่มือความปลอดภัยและการตั้งค่า Google Apps Script">
-              <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-            </button>
-          </div>
+        
+
+        <div id="overviewContainer" class="flex gap-4 overflow-x-auto hide-scrollbar snap-x pb-2 justify-start sm:justify-center">
+
+          <!-- ข้อมูลจะถูกเติมด้วย Javascript -->
+
         </div>
 
       </div>
+
     </div>
 
-    <!-- Right Column: Primary Shift Display Card -->
-    <div class="relative z-20 h-full flex flex-col justify-between">
-      <div class="glass rounded-[32px] p-8 text-white shadow-2xl h-full flex flex-col relative overflow-hidden">
+
+
+    <!-- คอลัมน์ขวา: การ์ดแสดงข้อมูลพนักงานหลัก -->
+
+    <div class="relative z-20 h-full">
+
+      <!-- การ์ดแสดงผลข้อมูลหลัก (ตาม Dropdown) - ปรับเป็น h-full และ flex-col เพื่อยืดให้เท่า 2 กล่องซ้าย -->
+
+      <div class="glass rounded-[32px] p-8 text-white shadow-2xl mb-[25vh] md:mb-0 h-full flex flex-col">
+
         
-        <!-- Ambient decorative overlay -->
-        <div class="absolute right-0 top-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none"></div>
 
         <!-- Shift Badge -->
-        <div class="self-start relative z-10">
-          <div id="shiftBadge" class="inline-flex items-center gap-1.5 text-white text-[11px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-6 shadow-lg transition-all transform hover:scale-105">
+
+        <div class="self-start">
+
+          <div id="shiftBadge" class="inline-block text-white text-[11px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-5 shadow-md hidden transition-all">
+
             -
+
           </div>
+
         </div>
 
-        <!-- Date & Time Row -->
-        <div class="grid grid-cols-2 gap-6 relative z-10">
+
+
+        <div class="grid grid-cols-2 gap-6">
+
           <div>
-            <div class="text-blue-300 text-[10px] tracking-wider uppercase font-bold">วันที่ระบุ</div>
-            <div id="dateDisplay" class="font-semibold text-lg text-white mt-0.5">-</div>
+
+            <div class="text-blue-300 text-[10px] tracking-wider uppercase">Date</div>
+
+            <div id="dateDisplay" class="font-bold text-lg">-</div>
+
           </div>
+
           <div>
-            <div class="text-blue-300 text-[10px] tracking-wider uppercase font-bold">เวลาปฏิบัติหน้าที่</div>
-            <div id="timeDisplay" class="font-semibold text-lg text-white mt-0.5">-</div>
+
+            <div class="text-blue-300 text-[10px] tracking-wider uppercase">Time</div>
+
+            <div id="timeDisplay" class="font-bold text-lg">-</div>
+
           </div>
+
         </div>
 
-        <!-- Middle: Employee Identity Card with Mini Avatar placeholder in small viewport -->
-        <div class="mt-8 mb-6 relative z-10 flex-1 flex flex-col justify-center">
-          <div class="flex items-center gap-4 md:block">
-            <!-- Compact Avatar shown only when on mobile view where the main cutout isn't clearly visible -->
-            <div class="md:hidden w-20 h-20 rounded-2xl overflow-hidden border-2 border-white/20 shadow-md shrink-0 bg-slate-800">
-              <img id="mobileDisplayImage" src="" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80'">
-            </div>
-            
-            <div>
-              <div class="text-blue-300 text-[10px] tracking-wider uppercase font-bold">พนักงานผู้ปฏิบัติหน้าที่</div>
-              <h2 id="nameThDisplay" class="text-2xl md:text-3xl font-extrabold mt-1 transition-all truncate leading-snug">-</h2>
-              <div id="nameEnDisplay" class="text-blue-200 mt-0.5 font-medium tracking-wide">-</div>
-            </div>
-          </div>
+
+
+        <div class="mt-6 mb-4">
+
+          <div class="text-blue-300 text-[10px] tracking-wider uppercase">Employee Name</div>
+
+          <!-- ปรับขนาดชื่อ TH เป็น text-2xl ให้เล็กลงหน่อย -->
+
+          <div id="nameThDisplay" class="text-2xl font-bold mt-1 transition-all">-</div>
+
+          <div id="nameEnDisplay" class="text-blue-200 mt-1">-</div>
+
         </div>
 
-        <!-- Bottom Contact Numbers with sleek Icons -->
-        <div class="border-t border-white/10 mt-auto pt-6 flex flex-col sm:flex-row gap-6 sm:gap-10 relative z-10">
-          <div class="flex-1">
-            <div class="text-blue-300 text-[10px] tracking-wider uppercase font-bold flex items-center gap-1.5">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-              เบอร์โทรทีม (Team Tel)
-            </div>
-            <a id="teamTelLink" href="#" class="inline-block text-white hover:text-blue-400 font-extrabold text-lg mt-1 transition-colors">-</a>
+
+
+        <!-- เพิ่ม mt-auto เพื่อผลักส่วนเบอร์โทรศัพท์ให้ลงไปชิดด้านล่างสุดของกล่อง ทำให้ขอบล่างเสมอฝั่งซ้าย -->
+
+        <div class="border-t border-white/10 mt-auto pt-5 flex flex-col sm:flex-row gap-6 sm:gap-10">
+
+          <div>
+
+            <div class="text-blue-300 text-[10px] tracking-wider uppercase">Team Tel</div>
+
+            <div id="teamTelDisplay" class="font-bold mt-1">-</div>
+
           </div>
-          <div class="flex-1">
-            <div class="text-blue-300 text-[10px] tracking-wider uppercase font-bold flex items-center gap-1.5">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-              เบอร์โทรศัพท์ส่วนตัว (Personal Tel)
-            </div>
-            <a id="personalTelLink" href="#" class="inline-block text-white hover:text-blue-400 font-extrabold text-lg mt-1 transition-colors">-</a>
+
+          <div>
+
+            <div class="text-blue-300 text-[10px] tracking-wider uppercase">Personal Tel</div>
+
+            <div id="personalTelDisplay" class="font-bold mt-1">-</div>
+
           </div>
+
         </div>
 
       </div>
+
     </div>
+
+
 
   </div>
 
-</div>
 
-<!-- Cutout Employee Graphic at the very bottom background (Tailored for Large screens) -->
-<div class="employee-wrapper hidden md:flex">
-  <div class="glow ambient-glow"></div>
-  <img id="profileImage" src="" class="active" onerror="handleImageLoadError(this)" onload="this.classList.add('active')">
-</div>
 
-<!-- ========================================== -->
-<!-- MODAL 1: ROSTER MANAGER (LOCAL EDITOR) -->
-<!-- ========================================== -->
-<div id="editorModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden transition-opacity duration-300">
-  <div class="bg-slate-900 border border-white/10 rounded-[28px] max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl relative">
-    
-    <div class="flex justify-between items-center mb-6">
-      <div>
-        <h3 class="text-xl font-bold text-white">แก้ไขข้อมูลตารางเวร</h3>
-        <p class="text-slate-400 text-xs mt-1" id="editingDateLabel">กำลังจัดการตารางวันที่: ...</p>
-      </div>
-      <button onclick="closeEditorModal()" class="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-      </button>
-    </div>
-
-    <!-- Active tabs selection for 5 standard slots -->
-    <div class="flex gap-2 mb-6 overflow-x-auto pb-2 border-b border-white/10 hide-scrollbar" id="editorTabs">
-      <!-- Tabs populated via JS -->
-    </div>
-
-    <!-- Edit Fields form -->
-    <div class="space-y-4">
-      <input type="hidden" id="editSlotKey">
-      
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label class="text-slate-300 text-xs font-bold block mb-1">ชื่อพนักงาน (ภาษาไทย)</label>
-          <input type="text" id="editNameTh" class="w-full bg-slate-800/80 border border-white/10 rounded-xl px-3 py-2 text-white text-sm outline-none focus:border-blue-400 transition-all">
-        </div>
-        <div>
-          <label class="text-slate-300 text-xs font-bold block mb-1">ชื่อพนักงาน (English)</label>
-          <input type="text" id="editNameEn" class="w-full bg-slate-800/80 border border-white/10 rounded-xl px-3 py-2 text-white text-sm outline-none focus:border-blue-400 transition-all">
-        </div>
-      </div>
-
-      <div>
-        <label class="text-slate-300 text-xs font-bold block mb-1">ลิงก์ URL รูปภาพพนักงาน (หากเว้นว่าง ระบบจะมีรูปจำลองให้)</label>
-        <div class="flex gap-2">
-          <input type="text" id="editImageUrl" placeholder="https://..." class="flex-1 bg-slate-800/80 border border-white/10 rounded-xl px-3 py-2 text-white text-xs outline-none focus:border-blue-400 transition-all">
-          <button onclick="applyPresetAvatar()" class="bg-blue-500/20 text-blue-300 text-xs px-3 rounded-xl hover:bg-blue-500/30 transition-colors">ใช้อวตาร์</button>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label class="text-slate-300 text-xs font-bold block mb-1">เบอร์โทรศัพท์ของทีม</label>
-          <input type="text" id="editTeamTel" class="w-full bg-slate-800/80 border border-white/10 rounded-xl px-3 py-2 text-white text-sm outline-none focus:border-blue-400 transition-all">
-        </div>
-        <div>
-          <label class="text-slate-300 text-xs font-bold block mb-1">เบอร์โทรศัพท์ส่วนตัว</label>
-          <input type="text" id="editPersonalTel" class="w-full bg-slate-800/80 border border-white/10 rounded-xl px-3 py-2 text-white text-sm outline-none focus:border-blue-400 transition-all">
-        </div>
-      </div>
-    </div>
-
-    <!-- Action buttons inside modal -->
-    <div class="flex justify-between items-center mt-8 pt-4 border-t border-white/10">
-      <button onclick="clearCurrentSlot()" class="text-red-400 hover:text-red-300 text-xs font-semibold hover:underline">
-        ลบข้อมูลกะนี้ออก (ว่าง)
-      </button>
-      <div class="flex gap-3">
-        <button onclick="closeEditorModal()" class="bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-bold px-4 py-2 rounded-xl transition-all">
-          ยกเลิก
-        </button>
-        <button onclick="saveCurrentSlot()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold px-5 py-2 rounded-xl transition-all shadow-md">
-          บันทึกข้อมูลกะนี้
-        </button>
-      </div>
-    </div>
-
-  </div>
 </div>
 
 
-<!-- ========================================== -->
-<!-- MODAL 2: INTERACTIVE GOOGLE APPS SCRIPT GUIDE -->
-<!-- ========================================== -->
-<div id="gasModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-  <div class="bg-slate-900 border border-white/10 rounded-[28px] max-w-3xl w-full max-h-[85vh] overflow-y-auto p-6 shadow-2xl relative">
-    
-    <div class="flex justify-between items-center mb-6">
-      <div>
-        <h3 class="text-2xl font-bold text-white flex items-center gap-2">
-          <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-          วิธีแก้ไขปัญหา Google Apps Script "Failed to Fetch"
-        </h3>
-        <p class="text-slate-400 text-xs mt-1">สาเหตุหลักมักมาจากระดับสิทธิ์เข้าถึง (Permission Access) และการทำงานของ CORS เครือข่าย</p>
-      </div>
-      <button onclick="closeGasModal()" class="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-      </button>
-    </div>
 
-    <!-- Instruction list -->
-    <div class="space-y-6 text-sm text-slate-300">
-      
-      <!-- Step 1 -->
-      <div class="p-4 bg-slate-800/50 rounded-2xl border border-white/5">
-        <h4 class="font-extrabold text-blue-300 mb-2">1. แก้ไขหน้าต่างตั้งค่าสิทธิ์ตอนDeploy (สำคัญที่สุด ⭐)</h4>
-        <p class="text-xs text-slate-300 leading-relaxed">
-          หากพบข้อความว่า <span class="text-rose-400">Failed to fetch</span> แสดงว่าตอนที่คุณ Deploy ลิงก์ API คุณอาจไม่ได้เปิดสิทธิ์ให้ใครก็ได้เข้าถึงภายนอก วิธีแก้ไข:
-        </p>
-        <ul class="list-decimal pl-5 mt-2 space-y-1 text-xs text-slate-400">
-          <li>เข้าไปที่ Google Apps Script ของคุณ</li>
-          <li>กดปุ่ม <span class="text-white font-semibold">Deploy (การทำให้ใช้งานได้)</span> > <span class="text-white font-semibold">Manage deployments</span></li>
-          <li>คลิกไอคอนดินสอเพื่อแก้ไข และดูตรงหัวข้อ <span class="text-amber-400 font-semibold">"Who has access" (ผู้มีสิทธิ์เข้าถึง)</span></li>
-          <li>ปรับเปลี่ยนค่าให้เป็น <span class="text-emerald-400 font-bold">"Anyone" (ทุกคน)</span> เสมอ (หากเลือกเป็น Only myself เว็บภายนอกจะไม่สามารถดึงข้อมูลได้)</li>
-          <li>กด <span class="text-white font-semibold">Deploy</span> อีกครั้ง แล้วคัดลอกลิงก์ Web App URL ใหม่มาใช้แทน</li>
-        </ul>
-      </div>
+<div class="employee-wrapper">
 
-      <!-- Step 2 -->
-      <div class="p-4 bg-slate-800/50 rounded-2xl border border-white/5">
-        <h4 class="font-extrabold text-indigo-300 mb-2">2. ตัวอย่างโครงสร้างโค้ดฝั่ง Google Apps Script (GAS) ที่หลีกเลี่ยงข้อจำกัด CORS</h4>
-        <p class="text-xs text-slate-300 mb-3 leading-relaxed">
-          โครงสร้างฟังก์ชัน <code class="bg-black/30 px-1 py-0.5 rounded text-indigo-400 font-mono">doGet()</code> ของคุณ ควรส่งคืนค่าในรูปแบบ <code class="bg-black/30 px-1 py-0.5 rounded text-amber-400">ContentService.MimeType.JSON</code> โดยให้คัดลอกตัวอย่างนี้ไปประยุกต์ใช้เพื่อความแม่นยำสูง:
-        </p>
+  <div class="glow"></div>
 
-        <!-- Code Block -->
-        <pre class="bg-black/40 p-4 rounded-xl text-xs font-mono text-emerald-400 overflow-x-auto border border-white/10 select-all">
-function doGet(e) {
-  try {
-    var dateParam = e.parameter.date; // ดึงพารามิเตอร์วันที่ เช่น 2026-06-20
-    var data = getDailyScheduleData(dateParam); // ฟังก์ชันดึงตารางเวรตามวันที่ของคุณ
-    
-    // ส่งข้อมูลออกเป็น JSON Text Output เพื่อหลีกเลี่ยงปัญหา CORS
-    return ContentService.createTextOutput(JSON.stringify(data))
-      .setMimeType(ContentService.MimeType.JSON);
-  } catch(error) {
-    return ContentService.createTextOutput(JSON.stringify({ error: error.message }))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-}
+  <img id="profileImage" src="" onerror="this.style.display='none'" onload="this.style.display='block'">
 
-// โครงสร้างตัวอย่างของ Object ที่คาดหวังส่งกลับมาฝั่ง Client
-function getDailyScheduleData(date) {
-  // จำลองหรือดึงข้อมูลชีตจริงส่งกลับมา:
-  return {
-    "05:30-09:30": { nameTh: "สมหญิง เช้าแรก", nameEn: "Somying Morning", teamTel: "222", personalTel: "081-222", imageUrl: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150" },
-    "09:00-09:30": { nameTh: "สมชาย ลีดเดอร์", nameEn: Somchai Leader", teamTel: "111", personalTel: "081-111", imageUrl: "" },
-    "09:30-12:00": { nameTh: "สมฤดี เช้าสอง", nameEn: "Somrudee Morning", teamTel: "333", personalTel: "081-333", imageUrl: "" }
-  };
-}</pre>
-      </div>
-
-    </div>
-
-    <!-- Close button inside modal -->
-    <div class="flex justify-end mt-6 pt-4 border-t border-white/10">
-      <button onclick="closeGasModal()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold px-6 py-2.5 rounded-xl transition-all">
-        ตกลง, เข้าใจแล้ว
-      </button>
-    </div>
-
-  </div>
 </div>
+
 
 
 <script>
-  // URL หลักของ Google Apps Script Web App
+
+  // หากใช้ GitHub Pages และต้องการดึงข้อมูลจาก GAS ให้นำ URL ของ Web App มาวางตรงนี้
+
+  // เช่น "https://script.google.com/macros/s/AKfycb.../exec"
+
   const WEB_APP_API_URL = "https://script.google.com/macros/s/AKfycbzxBH3GRQO9eDlF0NdD9lrbgtsgng872_QmTOAJwvUzAms9U0olwfFRfb-lTmpVbJK9/exec"; 
 
-  let currentDailyData = {}; // เก็บข้อมูลของวันที่เลือกในปัจจุบัน
-  let isUsingMock = false;   // บ่งบอกว่าปัจจุบันใช้ข้อมูลจำลองจากเบราว์เซอร์หรือไม่
 
-  // รายชื่อกะที่จะแสดงในตาราง Overview ด้านล่าง
+
+  let currentDailyData = {}; // เก็บข้อมูลของทั้งวัน
+
+
+
+  // โครงสร้างที่ต้องการนำมาแสดง 5 รูป
+
   const overviewSlots = [
+
     { key: "09:00-09:30", label: "Briefing" },
-    { key: "05:30-09:30", label: "กะเช้าหลัก" },
-    { key: "09:30-12:00", label: "กะเช้าเสริม" },
-    { key: "14:30-17:30", label: "กะดึกหลัก" },
-    { key: "17:30-21:00", label: "กะดึกเสริม" }
+
+    { key: "05:30-09:30", label: "กะเช้า" },
+
+    { key: "09:30-12:00", label: "กะเช้า" },
+
+    { key: "14:30-17:30", label: "กะดึก" },
+
+    { key: "17:30-21:00", label: "กะดึก" }
+
   ];
 
-  // พนักงานจำลองกรณีที่เรียก API ไม่ได้ และในเครื่องไม่มีข้อมูลบันทึกอยู่
-  const mockupDatabase = {
-    "default": {
-      "09:00-09:30": { nameTh: "สมชาย ลีดเดอร์", nameEn: "Somchai Leader", teamTel: "089-999-9999", personalTel: "081-111-1111", imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80" },
-      "05:30-09:30": { nameTh: "สมหญิง เช้าแรก", nameEn: "Somying Morning", teamTel: "089-999-9999", personalTel: "081-222-2222", imageUrl: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=300&q=80" },
-      "09:30-12:00": { nameTh: "สมฤดี เช้าสอง", nameEn: "Somrudee Morning", teamTel: "089-999-9999", personalTel: "081-333-3333", imageUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80" },
-      "12:00-13:00": { nameTh: "พักกลางวัน (สลับเฝ้าเวร)", nameEn: "Lunch Break Backup", teamTel: "089-999-9999", personalTel: "-", imageUrl: "" },
-      "13:00-14:30": { nameTh: "สิริมา ดึกแรก", nameEn: "Sirima Afternoon", teamTel: "089-999-9999", personalTel: "081-444-4444", imageUrl: "https://images.unsplash.com/photo-1554151228-14d9def656e4?auto=format&fit=crop&w=300&q=80" },
-      "14:30-17:30": { nameTh: "วัฒนา โกศลวิจิตร", nameEn: "Wattana Kosalawit", teamTel: "081-142-6801", personalTel: "096-562-5909", imageUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80" },
-      "17:30-21:00": { nameTh: "อานนท์ กล้าหาญ", nameEn: "Anont Night Shift", teamTel: "089-999-9999", personalTel: "081-555-5555", imageUrl: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=300&q=80" }
-    }
-  };
+
 
   window.onload = function() {
+
     setDefaultDate();
-    autoSelectShift();
+
+    autoSelectShift(); // เช็คเวลาปัจจุบันเพื่อเลือก Dropdown
+
     fetchLeadData();
+
   };
 
-  // ดึงค่าวันที่ในปัจจุบันเป็นค่าเริ่มต้น
+
+
   function setDefaultDate() {
+
     const today = new Date();
+
     const yyyy = today.getFullYear();
+
     let mm = today.getMonth() + 1;
+
     let dd = today.getDate();
+
     if (dd < 10) dd = '0' + dd;
+
     if (mm < 10) mm = '0' + mm;
+
     document.getElementById('dateInput').value = yyyy + '-' + mm + '-' + dd;
+
   }
 
-  // ออโต้เลือกกะการแสดงผลตามเวลาจริงขณะที่ผู้ใช้งานเปิดเว็บ
+
+
   function autoSelectShift() {
+
     const now = new Date();
+
     const h = now.getHours();
+
     const m = now.getMinutes();
+
     const currentMins = h * 60 + m;
 
-    let shiftToSelect = "05:30-09:30";
+
+
+    let shiftToSelect = "05:30-09:30"; // ค่าเริ่มต้น
+
     
+
     if (currentMins >= (5*60 + 30) && currentMins < (9*60)) {
+
       shiftToSelect = "05:30-09:30";
+
     } 
+
+    // เงื่อนไข Briefing พิเศษ (09:00 - 09:15)
+
     else if (currentMins >= (9*60) && currentMins <= (9*60 + 15)) {
+
       shiftToSelect = "09:00-09:30"; 
+
     } 
+
+    // หลัง 09:15 จนถึง 09:30 ให้ตีกลับไปที่กะเช้า (05:30 - 09:30)
+
     else if (currentMins > (9*60 + 15) && currentMins < (9*60 + 30)) {
+
       shiftToSelect = "05:30-09:30"; 
+
     } 
+
     else if (currentMins >= (9*60 + 30) && currentMins < (12*60)) {
+
       shiftToSelect = "09:30-12:00";
+
     } 
+
     else if (currentMins >= (12*60) && currentMins < (13*60)) {
+
       shiftToSelect = "12:00-13:00";
+
     } 
+
     else if (currentMins >= (13*60) && currentMins < (14*60 + 30)) {
+
       shiftToSelect = "13:00-14:30";
+
     } 
+
     else if (currentMins >= (14*60 + 30) && currentMins < (17*60 + 30)) {
+
       shiftToSelect = "14:30-17:30";
+
     } 
-    else {
+
+    else if (currentMins >= (17*60 + 30)) {
+
       shiftToSelect = "17:30-21:00";
+
     }
+
+
 
     const timeInput = document.getElementById('timeInput');
+
     if (timeInput) {
+
       timeInput.value = shiftToSelect;
+
     }
+
   }
 
-  // ฟังก์ชันหลักในการดึงข้อมูล (API & Local Fallback)
+
+
   function fetchLeadData() {
+
     const selectedDate = document.getElementById('dateInput').value;
+
     const statusMsg = document.getElementById('statusMessage');
+
+
 
     if (!selectedDate) {
-      showError("⚠️ กรุณาระบุวันที่ที่ต้องการสืบค้น");
+
+      statusMsg.innerText = "⚠️ กรุณาเลือกวันที่";
+
+      statusMsg.classList.remove('hidden');
+
       return;
+
     }
+
     statusMsg.classList.add('hidden');
 
-    // อัปเดตสถานะการโหลดระหว่างดึงข้อมูล
-    document.getElementById("nameThDisplay").innerText = "กำลังค้นหาตาราง...";
-    document.getElementById("nameEnDisplay").innerText = "Calling API Services...";
-    document.getElementById("overviewContainer").innerHTML = `
-      <div class='text-white/50 text-xs w-full text-center py-4 flex flex-col items-center justify-center gap-2'>
-        <svg class="animate-spin h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-        <span>กำลังเชื่อมโยงฐานข้อมูล...</span>
-      </div>`;
-    
-    // ตั้งสถานะรอตรวจสอบ
-    updateNetworkStatus("checking");
 
-    // ดึงข้อมูลหลักจาก Google Apps Script
-    if (WEB_APP_API_URL !== "") {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000); // ตั้ง Timeout ไว้ที่ 8 วินาทีป้องกันค้างยาว
 
-      fetch(`${WEB_APP_API_URL}?date=${selectedDate}`, { signal: controller.signal })
-        .then(response => {
-          clearTimeout(timeoutId);
-          return response.json();
+    document.getElementById("nameThDisplay").innerText = "กำลังค้นหา...";
+
+    document.getElementById("nameEnDisplay").innerText = "Loading...";
+
+    document.getElementById("overviewContainer").innerHTML = "<div class='text-white/50 text-xs w-full text-center py-4'>กำลังดึงข้อมูล...</div>";
+
+    document.getElementById("profileImage").style.opacity = "0.5";
+
+
+
+    // 1. กรณีนำไปรันบน Google Apps Script โดยตรง
+
+    if (typeof google !== 'undefined' && google.script) {
+
+      google.script.run
+
+        .withSuccessHandler(function(data) {
+
+           currentDailyData = data || {};
+
+           renderOverview();
+
+           renderMainCard();
+
         })
+
+        .withFailureHandler(function(error) {
+
+           document.getElementById("nameThDisplay").innerText = "เกิดข้อผิดพลาด";
+
+           statusMsg.innerText = "GAS Error: " + error.message;
+
+           statusMsg.classList.remove('hidden');
+
+        })
+
+        .getDailyScheduleData(selectedDate);
+
+    } 
+
+    // 2. กรณีนำไปรันบน GitHub Pages และเชื่อมต่อ API จาก Google Apps Script Web App
+
+    else if (WEB_APP_API_URL !== "") {
+
+      fetch(`${WEB_APP_API_URL}?date=${selectedDate}`)
+
+        .then(response => response.json())
+
         .then(data => {
-          if (data && !data.error) {
-            currentDailyData = data;
-            isUsingMock = false;
-            updateNetworkStatus("online");
-            document.getElementById("apiWarningBanner").classList.add('hidden');
-          } else {
-            throw new Error(data.error || "ไม่พบโครงสร้างข้อมูลตารางเวร");
-          }
-          renderOverview();
-          renderMainCard();
+
+           currentDailyData = data || {};
+
+           renderOverview();
+
+           renderMainCard();
+
         })
+
         .catch(error => {
-          clearTimeout(timeoutId);
-          console.warn("GAS Connection failed. Switched to offline sandbox mode:", error);
-          
-          // เปลี่ยนมาใช้โหมดออฟไลน์
-          loadOfflineFallback(selectedDate);
+
+           document.getElementById("nameThDisplay").innerText = "เกิดข้อผิดพลาดในการดึงข้อมูล";
+
+           statusMsg.innerText = "API Error: " + error.message;
+
+           statusMsg.classList.remove('hidden');
+
         });
-    } else {
-      loadOfflineFallback(selectedDate);
+
+    } 
+
+    // 3. ข้อมูลจำลองสำหรับการพรีวิว (Mockup) เมื่อไม่ได้ตั้งค่า URL หรือรันผ่าน Google script ไม่ได้
+
+    else {
+
+      setTimeout(() => {
+
+        currentDailyData = {
+
+          "09:00-09:30": { nameTh: "สมชาย ลีดเดอร์", imageUrl: "https://placehold.co/100x100/blue/white?text=Brief", nameEn: "Somchai Leader", teamTel: "111", personalTel: "081-111" },
+
+          "05:30-09:30": { nameTh: "สมหญิง เช้าแรก", imageUrl: "https://placehold.co/100x100/orange/white?text=M1", nameEn: "Somying Morning", teamTel: "222", personalTel: "081-222" },
+
+          "09:30-12:00": { nameTh: "สมฤดี เช้าสอง", imageUrl: "https://placehold.co/100x100/orange/white?text=M2", nameEn: "Somrudee Morning", teamTel: "333", personalTel: "081-333" },
+
+          "14:30-17:30": { nameTh: "นายวัฒนา โกศลวิจิตร", imageUrl: "https://placehold.co/100x100/purple/white?text=N1", nameEn: "Wattana Kosalawit", teamTel: "0811426801", personalTel: "0965625909" },
+
+          "17:30-21:00": { nameTh: "สมปอง ดึกสอง", imageUrl: "https://placehold.co/100x100/purple/white?text=N2", nameEn: "Sompong Night", teamTel: "555", personalTel: "081-555" },
+
+        };
+
+        renderOverview();
+
+        renderMainCard();
+
+      }, 800);
+
     }
+
   }
 
-  // โหลดตารางเวรจากหน่วยความจำ LocalStorage ของวันที่นั้นๆ กรณี API ดึงไม่สำเร็จ
-  function loadOfflineFallback(selectedDate) {
-    isUsingMock = true;
-    updateNetworkStatus("offline");
-    document.getElementById("apiWarningBanner").classList.remove('hidden');
 
-    const storedData = localStorage.getItem(`roster_${selectedDate}`);
-    if (storedData) {
-      try {
-        currentDailyData = JSON.parse(storedData);
-      } catch (e) {
-        currentDailyData = { ...mockupDatabase.default };
-      }
-    } else {
-      // หากไม่มีข้อมูลในเครื่อง ให้ก๊อปปี้ฐานข้อมูลทดสอบ (Mockup) มาวางเป็นโครงสร้างเริ่มต้น
-      currentDailyData = { ...mockupDatabase.default };
-    }
 
-    renderOverview();
-    renderMainCard();
-  }
+  // ฟังก์ชันวาดรูป 5 คน
 
-  // อัปเดตการแสดงผลไอคอนมุมขวาบนบอกสถานะ
-  function updateNetworkStatus(status) {
-    const dot = document.getElementById("statusDot");
-    const text = document.getElementById("statusText");
-    const badge = document.getElementById("connectionStatus");
-
-    if (status === "online") {
-      dot.className = "relative inline-flex rounded-full h-2 w-2 bg-emerald-500";
-      text.innerText = "เชื่อมต่อ API เรียบร้อย";
-      text.className = "text-emerald-300";
-      badge.className = "glass border-emerald-500/20 px-4 py-2 rounded-2xl flex items-center gap-2 text-xs font-semibold shadow-lg";
-    } else if (status === "offline") {
-      dot.className = "relative inline-flex rounded-full h-2 w-2 bg-amber-500";
-      text.innerText = "ออฟไลน์ (Local Storage)";
-      text.className = "text-amber-300";
-      badge.className = "glass border-amber-500/20 px-4 py-2 rounded-2xl flex items-center gap-2 text-xs font-semibold shadow-lg";
-    } else {
-      dot.className = "relative inline-flex rounded-full h-2 w-2 bg-slate-400";
-      text.innerText = "กำลังตรวจสอบการเชื่อมต่อ...";
-      text.className = "text-slate-300";
-    }
-  }
-
-  // สลับภาพและเปลี่ยนสีกล่องแบบ Interactive
-  function selectTimeAndRender(timeKey) {
-    document.getElementById('timeInput').value = timeKey;
-    renderMainCard();
-  }
-
-  // แสดงผลตารางคนจิ๋ว 5 กะด่วนในเครื่องมือซ้าย
   function renderOverview() {
+
     const container = document.getElementById("overviewContainer");
+
     container.innerHTML = "";
 
+
+
     overviewSlots.forEach(slot => {
+
       const personData = currentDailyData[slot.key];
+
       
-      const imgUrl = personData && personData.imageUrl ? personData.imageUrl : getPlaceholderImage(slot.label);
-      const name = personData && personData.nameTh ? personData.nameTh.split(' ')[0] : "ว่าง";
-      const hasRoster = !!(personData && personData.nameTh);
-      const opacity = hasRoster ? "opacity-100 ring-2 ring-blue-400/40" : "opacity-40 border-dashed border-white/10";
+
+      const imgUrl = personData && personData.imageUrl ? personData.imageUrl : "https://placehold.co/100x100/333/666?text=ว่าง";
+
+      const name = personData && personData.nameTh ? personData.nameTh.split(' ')[0] : "ไม่มีเวร";
+
+      const opacity = personData ? "opacity-100" : "opacity-50";
+
+
+
+      // การ์ดคนขนาดเล็ก
 
       const cardHtml = `
-        <div class="flex flex-col items-center min-w-[76px] snap-center cursor-pointer hover:scale-105 transition-all duration-300 group" onclick="selectTimeAndRender('${slot.key}')">
-          <div class="w-[54px] h-[54px] rounded-full overflow-hidden border-2 border-white/20 shadow-md ${opacity} bg-slate-800 transition-all group-hover:border-blue-400">
-             <img src="${imgUrl}" class="w-full h-full object-cover" onerror="this.src='${getPlaceholderImage(slot.label)}'">
+
+        <div class="flex flex-col items-center min-w-[70px] snap-center cursor-pointer hover:scale-105 transition-transform" onclick="selectTimeAndRender('${slot.key}')">
+
+          <div class="w-[50px] h-[50px] rounded-full overflow-hidden border-2 border-white/20 shadow-md ${opacity}">
+
+             <img src="${imgUrl}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/333/666?text=NoPic'">
+
           </div>
-          <div class="mt-2 text-[9px] text-white/90 font-semibold uppercase tracking-wider bg-white/10 group-hover:bg-blue-500/30 px-2 py-0.5 rounded-full transition-colors">${slot.label}</div>
-          <div class="text-[11px] text-slate-300 font-medium mt-1 w-full text-center truncate px-1">${name}</div>
+
+          <div class="mt-2 text-[9px] text-white/80 uppercase tracking-wider bg-black/30 px-2 py-0.5 rounded-full">${slot.label}</div>
+
+          <div class="text-[10px] text-white font-medium mt-1 w-full text-center truncate px-1">${name}</div>
+
         </div>
+
       `;
+
       container.innerHTML += cardHtml;
-    });
-  }
 
-  // วาดผลข้อมูลที่เลือกใน Panel ขวาหลัก
-  function renderMainCard() {
-    const selectedDate = document.getElementById('dateInput').value;
-    const selectedTimeVal = document.getElementById('timeInput').value;
-    const cleanTimeKey = selectedTimeVal.replace(/\s+/g, '');
-    
-    const data = currentDailyData[cleanTimeKey];
-    
-    const shiftBadge = document.getElementById("shiftBadge");
-    const imgElement = document.getElementById("profileImage");
-    const mobileImgElement = document.getElementById("mobileDisplayImage");
-    
-    // ตั้งค่าวัน-เวลาเบื้องต้นลงในฟิลด์ข้อมูลการ์ด
-    document.getElementById("dateDisplay").innerText = selectedDate;
-    document.getElementById("timeDisplay").innerText = document.getElementById('timeInput').options[document.getElementById('timeInput').selectedIndex].text;
-
-    // อัปเดตอนิเมชันรูปสไลด์เปลี่ยนตัวละคร
-    imgElement.classList.remove('active');
-
-    // กรณีไม่มีคนลงตารางกะดังกล่าว
-    if (!data || !data.nameTh) {
-      document.getElementById("nameThDisplay").innerText = "ไม่มีข้อมูลการเข้าเวร";
-      document.getElementById("nameThDisplay").className = "text-2xl font-bold mt-1 transition-all text-slate-400 italic";
-      document.getElementById("nameEnDisplay").innerText = "No Shift Scheduled";
-      
-      document.getElementById("teamTelDisplay").innerText = "ไม่มี";
-      document.getElementById("personalTelDisplay").innerText = "ไม่มี";
-      document.getElementById("teamTelLink").removeAttribute("href");
-      document.getElementById("personalTelLink").removeAttribute("href");
-      
-      const blankImg = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=300&q=80";
-      imgElement.src = blankImg;
-      mobileImgElement.src = blankImg;
-    } else {
-      // อัปเดตข้อมูลพนักงาน
-      document.getElementById("nameThDisplay").innerText = data.nameTh;
-      document.getElementById("nameThDisplay").className = "text-2xl md:text-3xl font-extrabold mt-1 transition-all text-white";
-      document.getElementById("nameEnDisplay").innerText = data.nameEn;
-      
-      // เบอร์โทรศัพท์ & ลิงก์ด่วนสำหรับกดโทรออกบนมือถือ
-      document.getElementById("teamTelDisplay").innerText = data.teamTel || "-";
-      document.getElementById("personalTelDisplay").innerText = data.personalTel || "-";
-      
-      if (data.teamTel && data.teamTel !== "-") {
-        document.getElementById("teamTelLink").innerText = data.teamTel;
-        document.getElementById("teamTelLink").href = `tel:${data.teamTel}`;
-      } else {
-        document.getElementById("teamTelLink").innerText = "-";
-        document.getElementById("teamTelLink").removeAttribute("href");
-      }
-
-      if (data.personalTel && data.personalTel !== "-") {
-        document.getElementById("personalTelLink").innerText = data.personalTel;
-        document.getElementById("personalTelLink").href = `tel:${data.personalTel}`;
-      } else {
-        document.getElementById("personalTelLink").innerText = "-";
-        document.getElementById("personalTelLink").removeAttribute("href");
-      }
-
-      // ตรวจสอบรูปภาพ
-      const finalImg = data.imageUrl || getPlaceholderImage(cleanTimeKey);
-      imgElement.src = finalImg;
-      mobileImgElement.src = finalImg;
-    }
-
-    // ดีเลย์เบาๆ เพื่อให้เอฟเฟกต์การสไลด์นุ่มนวล
-    setTimeout(() => {
-      imgElement.classList.add('active');
-    }, 100);
-
-    // ปรับการดีไซน์ Badge สีตามกะ
-    shiftBadge.classList.remove('hidden');
-
-    if (cleanTimeKey === '09:00-09:30') {
-      shiftBadge.innerHTML = "📋 Lead Pre-Shift Briefing";
-      shiftBadge.className = "inline-flex items-center gap-1.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-[11px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-6 shadow-md transition-all";
-    } 
-    else if (['05:30-09:30', '09:30-12:00', '13:00-14:30'].includes(cleanTimeKey)) {
-      shiftBadge.innerHTML = "☀️ กะเช้า (Morning Shift)";
-      shiftBadge.className = "inline-flex items-center gap-1.5 bg-gradient-to-r from-orange-400 to-amber-500 text-white text-[11px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-6 shadow-md transition-all";
-    } 
-    else if (['12:00-13:00'].includes(cleanTimeKey)) {
-      shiftBadge.innerHTML = "🍽️ กะสลับพักเที่ยง (Lunch Rotation)";
-      shiftBadge.className = "inline-flex items-center gap-1.5 bg-gradient-to-r from-emerald-500 to-indigo-600 text-white text-[11px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-6 shadow-md transition-all";
-    }
-    else if (['14:30-17:30', '17:30-21:00'].includes(cleanTimeKey)) {
-      shiftBadge.innerHTML = "🌙 กะดึก (Night Shift)";
-      shiftBadge.className = "inline-flex items-center gap-1.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-[11px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-6 shadow-md transition-all";
-    } 
-    else {
-      shiftBadge.innerHTML = "🎯 กะปกติ (Standard Schedule)";
-      shiftBadge.className = "inline-flex items-center gap-1.5 bg-white/20 text-white text-[11px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-6 shadow-md transition-all";
-    }
-  }
-
-  // เมื่อโหลดรูปไม่สำเร็จ ให้เรียกใช้อวตาร์เริ่มต้นเพื่อกันการ์ดโล่ง
-  function handleImageLoadError(img) {
-    img.src = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=300&q=80";
-  }
-
-  // สร้างภาพจำลองสวยๆ หากพนักงานไม่มีรูปจริง
-  function getPlaceholderImage(roleLabel) {
-    if (roleLabel.includes("Briefing") || roleLabel.includes("09:00")) {
-      return "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=150&q=80";
-    }
-    if (roleLabel.includes("ดึก") || roleLabel.includes("14:30") || roleLabel.includes("17:30")) {
-      return "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80";
-    }
-    return "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80";
-  }
-
-  // แสดงข้อผิดพลาดแบบลอยในหน้าต่างดึงข้อมูล
-  function showError(msg) {
-    const statusMsg = document.getElementById('statusMessage');
-    statusMsg.innerText = msg;
-    statusMsg.classList.remove('hidden');
-  }
-
-  // ==========================================
-  // LOGIC FOR ROSTER EDITOR (MODAL 1)
-  // ==========================================
-  function openEditorModal() {
-    const dateInputVal = document.getElementById('dateInput').value;
-    document.getElementById('editingDateLabel').innerText = `กำลังจัดการตารางวันที่: ${dateInputVal} (บันทึกออฟไลน์ในเครื่อง)`;
-    
-    // สร้างแท็บกะงานภายใน Modal
-    const tabsContainer = document.getElementById('editorTabs');
-    tabsContainer.innerHTML = "";
-    
-    // ดึงกะทั้งหมดที่มีอยู่ในเมนู Dropdown ค้นหามาสร้างตัวเลือกฟอร์ม
-    const selectOptions = document.getElementById('timeInput').options;
-    
-    Array.from(selectOptions).forEach((option, index) => {
-      const activeClass = index === 0 ? "bg-blue-500 text-white" : "bg-slate-800 text-slate-300 hover:bg-slate-700";
-      tabsContainer.innerHTML += `
-        <button id="tab_${option.value}" onclick="switchEditorTab('${option.value}')" class="shrink-0 text-xs px-3.5 py-2 rounded-xl font-bold transition-all ${activeClass}">
-          ${option.text.split(' ')[0]} ${option.text.split(' ')[1] || ""}
-        </button>
-      `;
     });
 
-    // เริ่มต้นแสดงผลกะปัจจุบันที่เลือกในหน้าต่างด้านนอก
-    const defaultKey = document.getElementById('timeInput').value;
-    switchEditorTab(defaultKey);
-
-    const modal = document.getElementById('editorModal');
-    modal.classList.remove('hidden');
   }
 
-  function closeEditorModal() {
-    document.getElementById('editorModal').classList.add('hidden');
-  }
 
-  function switchEditorTab(timeKey) {
-    // ปลดคลาสสีทุกแท็บ
-    const tabs = document.querySelectorAll('#editorTabs button');
-    tabs.forEach(btn => {
-      btn.className = "shrink-0 text-xs px-3.5 py-2 rounded-xl font-bold transition-all bg-slate-800 text-slate-300 hover:bg-slate-700";
-    });
 
-    // ไฮไลต์แท็บที่ทำงานอยู่
-    const activeTab = document.getElementById(`tab_${timeKey}`);
-    if (activeTab) {
-      activeTab.className = "shrink-0 text-xs px-3.5 py-2 rounded-xl font-bold transition-all bg-blue-500 text-white shadow-lg";
-    }
+  // เผื่อผู้ใช้กดที่รูปคนจิ๋ว ให้มันเปลี่ยน Dropdown แล้วอัปเดตการ์ดใหญ่
 
-    // บรรจุข้อมูลกะเข้าสู่ Input
-    document.getElementById('editSlotKey').value = timeKey;
-    
-    const slotData = currentDailyData[timeKey] || { nameTh: "", nameEn: "", imageUrl: "", teamTel: "", personalTel: "" };
-    
-    document.getElementById('editNameTh').value = slotData.nameTh || "";
-    document.getElementById('editNameEn').value = slotData.nameEn || "";
-    document.getElementById('editImageUrl').value = slotData.imageUrl || "";
-    document.getElementById('editTeamTel').value = slotData.teamTel || "";
-    document.getElementById('editPersonalTel').value = slotData.personalTel || "";
-  }
+  function selectTimeAndRender(timeKey) {
 
-  // สุ่มลิงก์รูปอวตาร์พรีเมียมให้กรณีผู้ใช้ต้องการความเร็ว
-  function applyPresetAvatar() {
-    const avatars = [
-      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80",
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80",
-      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=300&q=80",
-      "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=300&q=80",
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80"
-    ];
-    const randomAvatar = avatars[Math.floor(Math.random() * avatars.length)];
-    document.getElementById('editImageUrl').value = randomAvatar;
-  }
+    document.getElementById('timeInput').value = timeKey;
 
-  // บันทึกข้อมูลของกะเดี่ยว
-  function saveCurrentSlot() {
-    const dateKey = document.getElementById('dateInput').value;
-    const slotKey = document.getElementById('editSlotKey').value;
-
-    const slotData = {
-      nameTh: document.getElementById('editNameTh').value.trim(),
-      nameEn: document.getElementById('editNameEn').value.trim(),
-      imageUrl: document.getElementById('editImageUrl').value.trim(),
-      teamTel: document.getElementById('editTeamTel').value.trim(),
-      personalTel: document.getElementById('editPersonalTel').value.trim()
-    };
-
-    // อัปเดตลงในตัวแปรหลัก
-    currentDailyData[slotKey] = slotData;
-
-    // บันทึกลงในหน่วยความจำของคอมพิวเตอร์ (LocalStorage)
-    localStorage.setItem(`roster_${dateKey}`, JSON.stringify(currentDailyData));
-
-    // วาดหน้าต่างหลักใหม่
-    renderOverview();
     renderMainCard();
 
-    // แสดงแจ้งเตือนย่อย
-    alert(`💡 บันทึกตารางกะเวลา ${slotKey} สำเร็จเรียบร้อยบนหน้าต่างนี้แล้ว!`);
   }
 
-  // เคลียร์ข้อมูลพนักงานกะนั้นออก
-  function clearCurrentSlot() {
-    if (confirm("คุณแน่ใจหรือไม่ที่จะลบรายชื่อพนักงานในกะนี้ออก?")) {
-      const dateKey = document.getElementById('dateInput').value;
-      const slotKey = document.getElementById('editSlotKey').value;
 
-      delete currentDailyData[slotKey];
-      localStorage.setItem(`roster_${dateKey}`, JSON.stringify(currentDailyData));
 
-      // เคลียร์ค่าฟอร์มกลับไปว่าง
-      document.getElementById('editNameTh').value = "";
-      document.getElementById('editNameEn').value = "";
-      document.getElementById('editImageUrl').value = "";
-      document.getElementById('editTeamTel').value = "";
-      document.getElementById('editPersonalTel').value = "";
+  // ฟังก์ชันอัปเดตการ์ดข้อมูลใหญ่ (ตาม Dropdown)
 
-      renderOverview();
-      renderMainCard();
+  function renderMainCard() {
+
+    const selectedDate = document.getElementById('dateInput').value;
+
+    const selectedTimeVal = document.getElementById('timeInput').value;
+
+    const cleanTimeKey = selectedTimeVal.replace(/\s+/g, '');
+
+    
+
+    const data = currentDailyData[cleanTimeKey];
+
+    
+
+    const shiftBadge = document.getElementById("shiftBadge");
+
+    const imgElement = document.getElementById("profileImage");
+
+    
+
+    imgElement.style.opacity = "1";
+
+
+
+    // อัปเดตข้อมูล Text ลงในการ์ด
+
+    document.getElementById("dateDisplay").innerText = selectedDate;
+
+    document.getElementById("timeDisplay").innerText = document.getElementById('timeInput').options[document.getElementById('timeInput').selectedIndex].text;
+
+
+
+    if (!data) {
+
+      document.getElementById("nameThDisplay").innerText = "ไม่มีข้อมูลเวร";
+
+      // ปรับ class text เป็น 2xl
+
+      document.getElementById("nameThDisplay").className = "text-2xl font-bold mt-1 transition-all text-red-400";
+
+      document.getElementById("nameEnDisplay").innerText = "No Record";
+
+      document.getElementById("teamTelDisplay").innerText = "-";
+
+      document.getElementById("personalTelDisplay").innerText = "-";
+
+      imgElement.src = "";
+
+    } else {
+
+      document.getElementById("nameThDisplay").innerText = data.nameTh;
+
+      // ปรับ class text เป็น 2xl
+
+      document.getElementById("nameThDisplay").className = "text-2xl font-bold mt-1 transition-all text-white";
+
+      document.getElementById("nameEnDisplay").innerText = data.nameEn;
+
+      document.getElementById("teamTelDisplay").innerText = data.teamTel;
+
+      document.getElementById("personalTelDisplay").innerText = data.personalTel;
+
+      imgElement.src = data.imageUrl || "";
+
     }
+
+
+
+    // --- ตรรกะแสดง Badge สี (กะเช้า, กะดึก, Briefing) ---
+
+    shiftBadge.classList.remove('hidden');
+
+
+
+    if (cleanTimeKey === '09:00-09:30') {
+
+      shiftBadge.innerHTML = "📋 Lead Pre-Shift Briefing";
+
+      shiftBadge.className = "inline-block bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-[11px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-5 shadow-md transition-all";
+
+    } 
+
+    else if (['05:30-09:30', '09:30-12:00', '13:00-14:30'].includes(cleanTimeKey)) {
+
+      shiftBadge.innerHTML = "☀️ กะเช้า (Morning Shift)";
+
+      shiftBadge.className = "inline-block bg-gradient-to-r from-orange-400 to-yellow-500 text-white text-[11px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-5 shadow-md transition-all";
+
+    } 
+
+    else if (['12:00-13:00', '14:30-17:30', '17:30-21:00'].includes(cleanTimeKey)) {
+
+      shiftBadge.innerHTML = "🌙 กะดึก (Night Shift)";
+
+      shiftBadge.className = "inline-block bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-[11px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-5 shadow-md transition-all";
+
+    } 
+
+    else {
+
+      // เผื่อมีเวลาอื่นๆ
+
+      shiftBadge.innerHTML = "🎯 กำหนดการ";
+
+      shiftBadge.className = "inline-block bg-white/20 text-white text-[11px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-5 shadow-md transition-all";
+
+    }
+
   }
 
-  // ==========================================
-  // GAS MODAL CONTROLS (MODAL 2)
-  // ==========================================
-  function openGasModal() {
-    document.getElementById('gasModal').classList.remove('hidden');
-  }
-
-  function closeGasModal() {
-    document.getElementById('gasModal').classList.add('hidden');
-  }
 </script>
 
+
+
 </body>
+
 </html>
+
+
+
