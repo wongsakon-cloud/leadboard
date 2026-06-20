@@ -50,7 +50,7 @@
       position: relative;
       z-index: 10;
       width: 100%;
-      max-width: 1000px; /* ขยายขนาดความกว้างสูงสุดให้รองรับ 2 คอลัมน์ */
+      max-width: 1000px;
       margin: auto;
       padding: 24px;
     }
@@ -74,7 +74,6 @@
       color: white;
     }
     
-    /* สไตล์สำหรับ Scroll แนวนอนซ่อน Scrollbar */
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
@@ -84,19 +83,14 @@
 
 <div class="content">
 
-  <!-- Header -->
   <div class="mb-6">
     <div class="text-blue-300 text-xs font-bold tracking-[0.3em] uppercase">Leaderboard</div>
     <div class="text-white text-5xl font-black">lead.</div>
   </div>
 
-  <!-- Grid Layout แยก 2 คอลัมน์สำหรับหน้าจอ Desktop/แนวนอน -->
-  <!-- เปลี่ยนเป็น items-stretch เพื่อให้กล่องขวาสูงเท่ากับกล่องซ้ายรวมกัน -->
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 items-stretch">
     
-    <!-- คอลัมน์ซ้าย: เครื่องมือค้นหา และ ภาพรวมทีม -->
     <div class="flex flex-col gap-6 h-full">
-      <!-- ส่วนค้นหา -->
       <div class="glass rounded-[24px] p-5 shadow-lg relative z-20">
         <div class="flex flex-col sm:flex-row gap-4 relative z-20">
           
@@ -127,27 +121,22 @@
             </button>
           </div>
         </div>
-        <div id="statusMessage" class="text-red-400 text-xs mt-3 hidden text-center"></div>
+        <div id="statusMessage" class="text-red-400 text-xs mt-3 hidden text-center font-medium bg-red-900/20 py-2 rounded-lg"></div>
       </div>
 
-      <!-- ส่วนแสดงภาพรวม 5 พนักงาน -->
       <div class="glass rounded-[24px] p-4 shadow-lg z-20 relative flex-1 flex flex-col justify-center">
         <div class="text-blue-200 text-[11px] font-bold tracking-widest uppercase mb-3 text-center">
           ทีมงานหลักประจำวัน (Daily Team Overview)
         </div>
         
         <div id="overviewContainer" class="flex gap-4 overflow-x-auto hide-scrollbar snap-x pb-2 justify-start sm:justify-center">
-          <!-- ข้อมูลจะถูกเติมด้วย Javascript -->
         </div>
       </div>
     </div>
 
-    <!-- คอลัมน์ขวา: การ์ดแสดงข้อมูลพนักงานหลัก -->
     <div class="relative z-20 h-full">
-      <!-- การ์ดแสดงผลข้อมูลหลัก (ตาม Dropdown) - ปรับเป็น h-full และ flex-col เพื่อยืดให้เท่า 2 กล่องซ้าย -->
       <div class="glass rounded-[32px] p-8 text-white shadow-2xl mb-[25vh] md:mb-0 h-full flex flex-col">
         
-        <!-- Shift Badge -->
         <div class="self-start">
           <div id="shiftBadge" class="inline-block text-white text-[11px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-5 shadow-md hidden transition-all">
             -
@@ -167,12 +156,10 @@
 
         <div class="mt-6 mb-4">
           <div class="text-blue-300 text-[10px] tracking-wider uppercase">Employee Name</div>
-          <!-- ปรับขนาดชื่อ TH เป็น text-2xl ให้เล็กลงหน่อย -->
           <div id="nameThDisplay" class="text-2xl font-bold mt-1 transition-all">-</div>
           <div id="nameEnDisplay" class="text-blue-200 mt-1">-</div>
         </div>
 
-        <!-- เพิ่ม mt-auto เพื่อผลักส่วนเบอร์โทรศัพท์ให้ลงไปชิดด้านล่างสุดของกล่อง ทำให้ขอบล่างเสมอฝั่งซ้าย -->
         <div class="border-t border-white/10 mt-auto pt-5 flex flex-col sm:flex-row gap-6 sm:gap-10">
           <div>
             <div class="text-blue-300 text-[10px] tracking-wider uppercase">Team Tel</div>
@@ -196,13 +183,10 @@
 </div>
 
 <script>
-  // หากใช้ GitHub Pages และต้องการดึงข้อมูลจาก GAS ให้นำ URL ของ Web App มาวางตรงนี้
-  // เช่น "https://script.google.com/macros/s/AKfycb.../exec"
   const WEB_APP_API_URL = "https://script.google.com/macros/s/AKfycbxVdydF-IgKd1ccRTfnrGNQN-NE2Z1hWnxCjODWFx4g0jre7qT7EMezDugLss38KHC5/exec"; 
 
-  let currentDailyData = {}; // เก็บข้อมูลของทั้งวัน
+  let currentDailyData = {}; 
 
-  // โครงสร้างที่ต้องการนำมาแสดง 5 รูป
   const overviewSlots = [
     { key: "09:00-09:30", label: "Briefing" },
     { key: "05:30-09:30", label: "กะเช้า" },
@@ -213,7 +197,7 @@
 
   window.onload = function() {
     setDefaultDate();
-    autoSelectShift(); // เช็คเวลาปัจจุบันเพื่อเลือก Dropdown
+    autoSelectShift();
     fetchLeadData();
   };
 
@@ -233,39 +217,19 @@
     const m = now.getMinutes();
     const currentMins = h * 60 + m;
 
-    let shiftToSelect = "05:30-09:30"; // ค่าเริ่มต้น
+    let shiftToSelect = "05:30-09:30";
     
-    if (currentMins >= (5*60 + 30) && currentMins < (9*60)) {
-      shiftToSelect = "05:30-09:30";
-    } 
-    // เงื่อนไข Briefing พิเศษ (09:00 - 09:15)
-    else if (currentMins >= (9*60) && currentMins <= (9*60 + 15)) {
-      shiftToSelect = "09:00-09:30"; 
-    } 
-    // หลัง 09:15 จนถึง 09:30 ให้ตีกลับไปที่กะเช้า (05:30 - 09:30)
-    else if (currentMins > (9*60 + 15) && currentMins < (9*60 + 30)) {
-      shiftToSelect = "05:30-09:30"; 
-    } 
-    else if (currentMins >= (9*60 + 30) && currentMins < (12*60)) {
-      shiftToSelect = "09:30-12:00";
-    } 
-    else if (currentMins >= (12*60) && currentMins < (13*60)) {
-      shiftToSelect = "12:00-13:00";
-    } 
-    else if (currentMins >= (13*60) && currentMins < (14*60 + 30)) {
-      shiftToSelect = "13:00-14:30";
-    } 
-    else if (currentMins >= (14*60 + 30) && currentMins < (17*60 + 30)) {
-      shiftToSelect = "14:30-17:30";
-    } 
-    else if (currentMins >= (17*60 + 30)) {
-      shiftToSelect = "17:30-21:00";
-    }
+    if (currentMins >= (5*60 + 30) && currentMins < (9*60)) shiftToSelect = "05:30-09:30";
+    else if (currentMins >= (9*60) && currentMins <= (9*60 + 15)) shiftToSelect = "09:00-09:30";
+    else if (currentMins > (9*60 + 15) && currentMins < (9*60 + 30)) shiftToSelect = "05:30-09:30";
+    else if (currentMins >= (9*60 + 30) && currentMins < (12*60)) shiftToSelect = "09:30-12:00";
+    else if (currentMins >= (12*60) && currentMins < (13*60)) shiftToSelect = "12:00-13:00";
+    else if (currentMins >= (13*60) && currentMins < (14*60 + 30)) shiftToSelect = "13:00-14:30";
+    else if (currentMins >= (14*60 + 30) && currentMins < (17*60 + 30)) shiftToSelect = "14:30-17:30";
+    else if (currentMins >= (17*60 + 30)) shiftToSelect = "17:30-21:00";
 
     const timeInput = document.getElementById('timeInput');
-    if (timeInput) {
-      timeInput.value = shiftToSelect;
-    }
+    if (timeInput) timeInput.value = shiftToSelect;
   }
 
   function fetchLeadData() {
@@ -279,117 +243,74 @@
     }
     statusMsg.classList.add('hidden');
 
-    document.getElementById("nameThDisplay").innerText = "กำลังค้นหา...";
-    document.getElementById("nameEnDisplay").innerText = "Loading...";
-    document.getElementById("overviewContainer").innerHTML = "<div class='text-white/50 text-xs w-full text-center py-4'>กำลังดึงข้อมูล...</div>";
-    document.getElementById("profileImage").style.opacity = "0.5";
+    document.getElementById("nameThDisplay").innerText = "กำลังโหลด...";
+    document.getElementById("nameEnDisplay").innerText = "Please wait...";
+    document.getElementById("overviewContainer").innerHTML = "<div class='text-white/50 text-xs w-full text-center py-4'>กำลังเชื่อมต่อข้อมูล...</div>";
 
-    // 1. กรณีนำไปรันบน Google Apps Script โดยตรง
-    if (typeof google !== 'undefined' && google.script) {
-      google.script.run
-        .withSuccessHandler(function(data) {
-           currentDailyData = data || {};
-           renderOverview();
-           renderMainCard();
-        })
-        .withFailureHandler(function(error) {
-           document.getElementById("nameThDisplay").innerText = "เกิดข้อผิดพลาด";
-           statusMsg.innerText = "GAS Error: " + error.message;
-           statusMsg.classList.remove('hidden');
-        })
-        .getDailyScheduleData(selectedDate);
-    } 
-    // 2. กรณีนำไปรันบน GitHub Pages และเชื่อมต่อ API จาก Google Apps Script Web App
-    else if (WEB_APP_API_URL !== "") {
-      fetch(`${WEB_APP_API_URL}?date=${selectedDate}`)
-        .then(response => response.json())
-        .then(data => {
-           currentDailyData = data || {};
-           renderOverview();
-           renderMainCard();
-        })
-        .catch(error => {
-           document.getElementById("nameThDisplay").innerText = "เกิดข้อผิดพลาดในการดึงข้อมูล";
-           statusMsg.innerText = "API Error: " + error.message;
-           statusMsg.classList.remove('hidden');
-        });
-    } 
-    // 3. ข้อมูลจำลองสำหรับการพรีวิว (Mockup) เมื่อไม่ได้ตั้งค่า URL หรือรันผ่าน Google script ไม่ได้
-    else {
-      setTimeout(() => {
-        currentDailyData = {
-          "09:00-09:30": { nameTh: "สมชาย ลีดเดอร์", imageUrl: "https://placehold.co/100x100/blue/white?text=Brief", nameEn: "Somchai Leader", teamTel: "111", personalTel: "081-111" },
-          "05:30-09:30": { nameTh: "สมหญิง เช้าแรก", imageUrl: "https://placehold.co/100x100/orange/white?text=M1", nameEn: "Somying Morning", teamTel: "222", personalTel: "081-222" },
-          "09:30-12:00": { nameTh: "สมฤดี เช้าสอง", imageUrl: "https://placehold.co/100x100/orange/white?text=M2", nameEn: "Somrudee Morning", teamTel: "333", personalTel: "081-333" },
-          "14:30-17:30": { nameTh: "นายวัฒนา โกศลวิจิตร", imageUrl: "https://placehold.co/100x100/purple/white?text=N1", nameEn: "Wattana Kosalawit", teamTel: "0811426801", personalTel: "0965625909" },
-          "17:30-21:00": { nameTh: "สมปอง ดึกสอง", imageUrl: "https://placehold.co/100x100/purple/white?text=N2", nameEn: "Sompong Night", teamTel: "555", personalTel: "081-555" },
-        };
-        renderOverview();
-        renderMainCard();
-      }, 800);
-    }
+    fetch(`${WEB_APP_API_URL}?date=${selectedDate}`)
+      .then(response => {
+        if (!response.ok) throw new Error("ไม่สามารถเชื่อมต่อ Server ได้ (" + response.status + ")");
+        return response.json();
+      })
+      .then(data => {
+         currentDailyData = data || {};
+         renderOverview();
+         renderMainCard();
+      })
+      .catch(error => {
+         document.getElementById("nameThDisplay").innerText = "เกิดข้อผิดพลาด";
+         document.getElementById("nameThDisplay").classList.add("text-red-400");
+         document.getElementById("nameEnDisplay").innerText = "Check GAS Deployment";
+         statusMsg.innerText = "Error: " + error.message + " (กรุณาตรวจสอบการ Publish ของ Google Apps Script)";
+         statusMsg.classList.remove('hidden');
+         console.error(error);
+      });
   }
 
-  // ฟังก์ชันวาดรูป 5 คน
   function renderOverview() {
     const container = document.getElementById("overviewContainer");
     container.innerHTML = "";
-
     overviewSlots.forEach(slot => {
       const personData = currentDailyData[slot.key];
-      
-      const imgUrl = personData && personData.imageUrl ? personData.imageUrl : "https://placehold.co/100x100/333/666?text=ว่าง";
-      const name = personData && personData.nameTh ? personData.nameTh.split(' ')[0] : "ไม่มีเวร";
-      const opacity = personData ? "opacity-100" : "opacity-50";
-
-      // การ์ดคนขนาดเล็ก
-      const cardHtml = `
+      const imgUrl = personData?.imageUrl || "https://placehold.co/100x100/333/666?text=ว่าง";
+      const name = personData?.nameTh?.split(' ')[0] || "ไม่มีเวร";
+      container.innerHTML += `
         <div class="flex flex-col items-center min-w-[70px] snap-center cursor-pointer hover:scale-105 transition-transform" onclick="selectTimeAndRender('${slot.key}')">
-          <div class="w-[50px] h-[50px] rounded-full overflow-hidden border-2 border-white/20 shadow-md ${opacity}">
+          <div class="w-[50px] h-[50px] rounded-full overflow-hidden border-2 border-white/20 shadow-md ${personData ? 'opacity-100' : 'opacity-50'}">
              <img src="${imgUrl}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/333/666?text=NoPic'">
           </div>
           <div class="mt-2 text-[9px] text-white/80 uppercase tracking-wider bg-black/30 px-2 py-0.5 rounded-full">${slot.label}</div>
           <div class="text-[10px] text-white font-medium mt-1 w-full text-center truncate px-1">${name}</div>
         </div>
       `;
-      container.innerHTML += cardHtml;
     });
   }
 
-  // เผื่อผู้ใช้กดที่รูปคนจิ๋ว ให้มันเปลี่ยน Dropdown แล้วอัปเดตการ์ดใหญ่
   function selectTimeAndRender(timeKey) {
     document.getElementById('timeInput').value = timeKey;
     renderMainCard();
   }
 
-  // ฟังก์ชันอัปเดตการ์ดข้อมูลใหญ่ (ตาม Dropdown)
   function renderMainCard() {
     const selectedDate = document.getElementById('dateInput').value;
     const selectedTimeVal = document.getElementById('timeInput').value;
     const cleanTimeKey = selectedTimeVal.replace(/\s+/g, '');
-    
     const data = currentDailyData[cleanTimeKey];
-    
     const shiftBadge = document.getElementById("shiftBadge");
     const imgElement = document.getElementById("profileImage");
     
-    imgElement.style.opacity = "1";
-
-    // อัปเดตข้อมูล Text ลงในการ์ด
     document.getElementById("dateDisplay").innerText = selectedDate;
     document.getElementById("timeDisplay").innerText = document.getElementById('timeInput').options[document.getElementById('timeInput').selectedIndex].text;
 
     if (!data) {
-      document.getElementById("nameThDisplay").innerText = "ไม่มีข้อมูลเวร";
-      // ปรับ class text เป็น 2xl
-      document.getElementById("nameThDisplay").className = "text-2xl font-bold mt-1 transition-all text-red-400";
-      document.getElementById("nameEnDisplay").innerText = "No Record";
+      document.getElementById("nameThDisplay").innerText = "ไม่มีข้อมูลในตาราง";
+      document.getElementById("nameThDisplay").className = "text-xl font-bold mt-1 transition-all text-red-400";
+      document.getElementById("nameEnDisplay").innerText = "No Data Found";
       document.getElementById("teamTelDisplay").innerText = "-";
       document.getElementById("personalTelDisplay").innerText = "-";
       imgElement.src = "";
     } else {
       document.getElementById("nameThDisplay").innerText = data.nameTh;
-      // ปรับ class text เป็น 2xl
       document.getElementById("nameThDisplay").className = "text-2xl font-bold mt-1 transition-all text-white";
       document.getElementById("nameEnDisplay").innerText = data.nameEn;
       document.getElementById("teamTelDisplay").innerText = data.teamTel;
@@ -397,25 +318,16 @@
       imgElement.src = data.imageUrl || "";
     }
 
-    // --- ตรรกะแสดง Badge สี (กะเช้า, กะดึก, Briefing) ---
     shiftBadge.classList.remove('hidden');
-
     if (cleanTimeKey === '09:00-09:30') {
       shiftBadge.innerHTML = "📋 Lead Pre-Shift Briefing";
       shiftBadge.className = "inline-block bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-[11px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-5 shadow-md transition-all";
-    } 
-    else if (['05:30-09:30', '09:30-12:00', '13:00-14:30'].includes(cleanTimeKey)) {
+    } else if (['05:30-09:30', '09:30-12:00', '13:00-14:30'].includes(cleanTimeKey)) {
       shiftBadge.innerHTML = "☀️ กะเช้า (Morning Shift)";
       shiftBadge.className = "inline-block bg-gradient-to-r from-orange-400 to-yellow-500 text-white text-[11px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-5 shadow-md transition-all";
-    } 
-    else if (['12:00-13:00', '14:30-17:30', '17:30-21:00'].includes(cleanTimeKey)) {
+    } else {
       shiftBadge.innerHTML = "🌙 กะดึก (Night Shift)";
       shiftBadge.className = "inline-block bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-[11px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-5 shadow-md transition-all";
-    } 
-    else {
-      // เผื่อมีเวลาอื่นๆ
-      shiftBadge.innerHTML = "🎯 กำหนดการ";
-      shiftBadge.className = "inline-block bg-white/20 text-white text-[11px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-5 shadow-md transition-all";
     }
   }
 </script>
