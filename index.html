@@ -130,8 +130,7 @@
         <div class="text-blue-200 text-[11px] font-bold tracking-widest uppercase mb-3 text-center">
           ทีมงานหลักประจำวัน (Daily Team Overview)
         </div>
-        <!-- แก้ไข: เพิ่ม pt-4 และ pb-4 เพื่อให้มีพื้นที่เหลือสำหรับการขยายซูม ไม่ให้วงกลมแหว่ง -->
-        <div id="overviewContainer" class="flex gap-4 overflow-x-auto hide-scrollbar snap-x pt-4 pb-4 px-2 justify-start sm:justify-center">
+        <div id="overviewContainer" class="flex gap-4 overflow-x-auto hide-scrollbar snap-x pb-2 justify-start sm:justify-center">
           <!-- ข้อมูลจะถูกเติมด้วย Javascript -->
         </div>
       </div>
@@ -189,7 +188,7 @@
   // ========================================================================
   // นำ URL ของ Web App จาก Google Apps Script (ที่ Deploy ใหม่ล่าสุด) มาใส่ที่นี่
   // ========================================================================
-  const WEB_APP_API_URL = "https://script.google.com/macros/s/AKfycbzn8DE5xJowtZbgnIBJENZeEvOb-R3Te8nv0KkyNoZD_4aKfdrCOUahc8sI-QCxijl_/exec"; 
+  const WEB_APP_API_URL = "https://script.google.com/macros/s/AKfycbzxBH3GRQO9eDlF0NdD9lrbgtsgng872_QmTOAJwvUzAms9U0olwfFRfb-lTmpVbJK9/exec"; 
 
   let currentDailyData = {}; 
 
@@ -297,9 +296,8 @@
       const name = personData && personData.nameTh ? personData.nameTh.split(' ')[0] : "ไม่มีเวร";
       const opacity = personData ? "opacity-100" : "opacity-50";
 
-      // แก้ไข: เพิ่ม origin-center และ transform-gpu ให้การขยายภาพสมูทและออกมาจากกึ่งกลาง
       const cardHtml = `
-        <div class="flex flex-col items-center min-w-[70px] snap-center cursor-pointer hover:scale-105 transition-transform origin-center transform-gpu" onclick="selectTimeAndRender('${slot.key}')">
+        <div class="flex flex-col items-center min-w-[70px] snap-center cursor-pointer hover:scale-105 transition-transform" onclick="selectTimeAndRender('${slot.key}')">
           <div class="w-[50px] h-[50px] rounded-full overflow-hidden border-2 border-white/20 shadow-md ${opacity}">
              <img src="${imgUrl}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/333/666?text=NoPic'">
           </div>
