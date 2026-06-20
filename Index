@@ -196,6 +196,10 @@
 </div>
 
 <script>
+  // หากใช้ GitHub Pages และต้องการดึงข้อมูลจาก GAS ให้นำ URL ของ Web App มาวางตรงนี้
+  // เช่น "https://script.google.com/macros/s/AKfycb.../exec"
+  const WEB_APP_API_URL = "https://script.google.com/macros/s/AKfycbxVdydF-IgKd1ccRTfnrGNQN-NE2Z1hWnxCjODWFx4g0jre7qT7EMezDugLss38KHC5/exec"; 
+
   let currentDailyData = {}; // เก็บข้อมูลของทั้งวัน
 
   // โครงสร้างที่ต้องการนำมาแสดง 5 รูป
@@ -280,19 +284,50 @@
     document.getElementById("overviewContainer").innerHTML = "<div class='text-white/50 text-xs w-full text-center py-4'>กำลังดึงข้อมูล...</div>";
     document.getElementById("profileImage").style.opacity = "0.5";
 
-    // สำหรับใช้บน GitHub Pages เราจะใช้ข้อมูลจำลอง (Mockup) ทันที
-    // ถ้าต้องการใช้ร่วมกับ Google Sheets หรือ API ในอนาคต ให้ใช้ Fetch API ตรงนี้ครับ
-    setTimeout(() => {
-      currentDailyData = {
-        "09:00-09:30": { nameTh: "สมชาย ลีดเดอร์", imageUrl: "https://placehold.co/100x100/blue/white?text=Brief", nameEn: "Somchai Leader", teamTel: "111", personalTel: "081-111" },
-        "05:30-09:30": { nameTh: "สมหญิง เช้าแรก", imageUrl: "https://placehold.co/100x100/orange/white?text=M1", nameEn: "Somying Morning", teamTel: "222", personalTel: "081-222" },
-        "09:30-12:00": { nameTh: "สมฤดี เช้าสอง", imageUrl: "https://placehold.co/100x100/orange/white?text=M2", nameEn: "Somrudee Morning", teamTel: "333", personalTel: "081-333" },
-        "14:30-17:30": { nameTh: "นายวัฒนา โกศลวิจิตร", imageUrl: "https://placehold.co/100x100/purple/white?text=N1", nameEn: "Wattana Kosalawit", teamTel: "0811426801", personalTel: "0965625909" },
-        "17:30-21:00": { nameTh: "สมปอง ดึกสอง", imageUrl: "https://placehold.co/100x100/purple/white?text=N2", nameEn: "Sompong Night", teamTel: "555", personalTel: "081-555" },
-      };
-      renderOverview();
-      renderMainCard();
-    }, 800); // ดีเลย์ 0.8 วินาทีจำลองการโหลดข้อมูล
+    // 1. กรณีนำไปรันบน Google Apps Script โดยตรง
+    if (typeof google !== 'undefined' && google.script) {
+      google.script.run
+        .withSuccessHandler(function(data) {
+           currentDailyData = data || {};
+           renderOverview();
+           renderMainCard();
+        })
+        .withFailureHandler(function(error) {
+           document.getElementById("nameThDisplay").innerText = "เกิดข้อผิดพลาด";
+           statusMsg.innerText = "GAS Error: " + error.message;
+           statusMsg.classList.remove('hidden');
+        })
+        .getDailyScheduleData(selectedDate);
+    } 
+    // 2. กรณีนำไปรันบน GitHub Pages และเชื่อมต่อ API จาก Google Apps Script Web App
+    else if (WEB_APP_API_URL !== "") {
+      fetch(`${WEB_APP_API_URL}?date=${selectedDate}`)
+        .then(response => response.json())
+        .then(data => {
+           currentDailyData = data || {};
+           renderOverview();
+           renderMainCard();
+        })
+        .catch(error => {
+           document.getElementById("nameThDisplay").innerText = "เกิดข้อผิดพลาดในการดึงข้อมูล";
+           statusMsg.innerText = "API Error: " + error.message;
+           statusMsg.classList.remove('hidden');
+        });
+    } 
+    // 3. ข้อมูลจำลองสำหรับการพรีวิว (Mockup) เมื่อไม่ได้ตั้งค่า URL หรือรันผ่าน Google script ไม่ได้
+    else {
+      setTimeout(() => {
+        currentDailyData = {
+          "09:00-09:30": { nameTh: "สมชาย ลีดเดอร์", imageUrl: "https://placehold.co/100x100/blue/white?text=Brief", nameEn: "Somchai Leader", teamTel: "111", personalTel: "081-111" },
+          "05:30-09:30": { nameTh: "สมหญิง เช้าแรก", imageUrl: "https://placehold.co/100x100/orange/white?text=M1", nameEn: "Somying Morning", teamTel: "222", personalTel: "081-222" },
+          "09:30-12:00": { nameTh: "สมฤดี เช้าสอง", imageUrl: "https://placehold.co/100x100/orange/white?text=M2", nameEn: "Somrudee Morning", teamTel: "333", personalTel: "081-333" },
+          "14:30-17:30": { nameTh: "นายวัฒนา โกศลวิจิตร", imageUrl: "https://placehold.co/100x100/purple/white?text=N1", nameEn: "Wattana Kosalawit", teamTel: "0811426801", personalTel: "0965625909" },
+          "17:30-21:00": { nameTh: "สมปอง ดึกสอง", imageUrl: "https://placehold.co/100x100/purple/white?text=N2", nameEn: "Sompong Night", teamTel: "555", personalTel: "081-555" },
+        };
+        renderOverview();
+        renderMainCard();
+      }, 800);
+    }
   }
 
   // ฟังก์ชันวาดรูป 5 คน
