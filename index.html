@@ -16,7 +16,6 @@
       overflow-y: auto; 
       min-height: 100vh;
       background: radial-gradient(circle at center bottom, #2563eb 0%, #1e3a8a 35%, #0f172a 100%);
-      /* นำ padding-bottom เดิมออก เพื่อใช้คลาส pb-[55vh] ของ Tailwind ด้านล่างแทน */
     }
 
     .glass {
@@ -81,30 +80,24 @@
 
 <body>
 
-<!-- เพิ่มระยะเผื่อด้านล่างบนมือถือ/iPad (pb-[55vh]) และคืนค่าเดิมเมื่อเป็นหน้าจอใหญ่ (lg:pb-8) -->
 <div class="content pb-[55vh] lg:pb-8">
-  <!-- Header -->
   <div class="mb-6">
     <div class="text-blue-300 text-xs font-bold tracking-[0.3em] uppercase">Leaderboard</div>
     <div class="text-white text-5xl font-black">SKY UBP Lead.</div>
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 items-stretch">
-    <!-- คอลัมน์ซ้าย: เครื่องมือค้นหา และ ภาพรวมทีม -->
     <div class="flex flex-col gap-6 h-full">
       
-      <!-- ส่วนค้นหา (ปรับปรุงเป็นระบบ Grid 12 คอลัมน์) -->
       <div class="glass rounded-[24px] p-5 shadow-lg relative z-20">
         <div class="grid grid-cols-12 gap-3 md:gap-4 relative z-20">
           
-          <!-- ช่องใส่วันที่ -->
           <div class="col-span-12 md:col-span-6 lg:col-span-5">
             <label class="text-blue-300 text-[10px] tracking-wider uppercase mb-1 block">เลือกวันที่ (Date)</label>
             <input type="date" id="dateInput" onchange="fetchLeadData()"
                    class="w-full h-12 appearance-none bg-white/10 border border-white/20 rounded-xl px-3 text-white text-sm outline-none focus:border-blue-400 focus:bg-white/20 transition-all cursor-pointer">
           </div>
 
-          <!-- ช่องเลือกช่วงเวลา -->
           <div class="col-span-12 md:col-span-6 lg:col-span-4">
             <label class="text-blue-300 text-[10px] tracking-wider uppercase mb-1 block">เลือกช่วงเวลา (Shift)</label>
             <div class="relative">
@@ -118,7 +111,6 @@
                 <option value="14:30-17:30">14:30 - 17:30</option>
                 <option value="17:30-21:00">17:30 - 21:00</option>
               </select>
-              <!-- Custom SVG Arrow เพื่อให้แสดงผลเหมือนกันทุกแพลตฟอร์ม (แทนที่ลูกศรเดิมบน iOS) -->
               <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-white/70">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -127,7 +119,6 @@
             </div>
           </div>
 
-          <!-- ปุ่มค้นหา -->
           <div class="col-span-12 md:col-span-12 lg:col-span-3 flex items-end mt-1 md:mt-2 lg:mt-0">
             <button onclick="fetchLeadData()" 
                     class="w-full h-12 bg-blue-500 hover:bg-blue-400 text-white font-bold px-5 rounded-xl transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2">
@@ -139,18 +130,15 @@
         <div id="statusMessage" class="text-red-400 text-xs mt-3 hidden text-center"></div>
       </div>
 
-      <!-- ส่วนแสดงภาพรวม 5 พนักงาน -->
       <div class="glass rounded-[24px] p-4 shadow-lg z-20 relative flex-1 flex flex-col justify-center">
         <div class="text-blue-200 text-[11px] font-bold tracking-widest uppercase mb-3 text-center">
           ทีมงานหลักประจำวัน (Daily Team Overview)
         </div>
         <div id="overviewContainer" class="flex gap-4 overflow-x-auto hide-scrollbar snap-x pt-4 pb-4 px-2 justify-start sm:justify-center">
-          <!-- ข้อมูลจะถูกเติมด้วย Javascript -->
-        </div>
+          </div>
       </div>
     </div>
 
-    <!-- คอลัมน์ขวา: การ์ดแสดงข้อมูลพนักงานหลัก -->
     <div class="relative z-20 h-auto md:h-full">
       <div class="glass rounded-[32px] p-6 md:p-8 text-white shadow-2xl h-auto md:h-full flex flex-col">
         
@@ -199,12 +187,11 @@
 </div>
 
 <script>
-  // ========================================================================
-  // นำ URL ของ Web App จาก Google Apps Script (ที่ Deploy ใหม่ล่าสุด) มาใส่ที่นี่
-  // ========================================================================
-  const WEB_APP_API_URL = "https://script.google.com/macros/s/AKfycbzn8DE5xJowtZbgnIBJENZeEvOb-R3Te8nv0KkyNoZD_4aKfdrCOUahc8sI-QCxijl_/exec"; 
+  const WEB_APP_API_URL = "https://script.google.com/macros/s/AKfycby9OuuwHGNwQMxTejHx2j4iBFLsVASrOc0oukMVely4QVG6IQxUdIli9HvjZZM2RFZY/exec"; 
 
   let currentDailyData = {}; 
+  let lastCheckedHour = new Date().getHours();
+  let lastSelectedShift = "";
 
   const overviewSlots = [
     { key: "09:00-09:30", label: "Briefing" },
@@ -217,7 +204,14 @@
   window.onload = function() {
     setDefaultDate();
     autoSelectShift();
+    
+    // บันทึกค่ากะเริ่มต้นหลังจากคำนวณเสร็จ
+    if (document.getElementById('timeInput')) {
+      lastSelectedShift = document.getElementById('timeInput').value;
+    }
+    
     fetchLeadData(); 
+    startAutoRefreshTimer(); // เริ่มตัวจับเวลา Auto-Refresh
   };
 
   function setDefaultDate() {
@@ -373,6 +367,51 @@
       shiftBadge.innerHTML = "🎯 กำหนดการ";
       shiftBadge.className = "inline-block bg-white/20 text-white text-[11px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-5 shadow-md transition-all";
     }
+  }
+
+  // ========================================================================
+  // ระบบตั้งค่าดึงข้อมูลอัตโนมัติ (Auto-Refresh) ทุกต้นชั่วโมง หรือ เปลี่ยนกะ
+  // ========================================================================
+  function startAutoRefreshTimer() {
+    setInterval(() => {
+      const now = new Date();
+      const currentHour = now.getHours();
+      
+      // 1. ตรวจสอบเมื่อขึ้นชั่วโมงใหม่ (นาทีที่ 00)
+      if (currentHour !== lastCheckedHour) {
+        console.log(`[Auto-Refresh] เปลี่ยนชั่วโมงใหม่เป็น ${currentHour}:00 น. กำลังดึงข้อมูล...`);
+        lastCheckedHour = currentHour;
+        
+        setDefaultDate();
+        autoSelectShift();
+        fetchLeadData();
+        return; 
+      }
+
+      // 2. ตรวจสอบการเปลี่ยนกะย่อย (กรณีเวลาชนครึ่งชั่วโมง เช่น 09:30, 14:30)
+      if (document.getElementById('timeInput')) {
+        const currentMins = now.getHours() * 60 + now.getMinutes();
+        let targetShift = "05:30-09:30"; 
+        
+        if (currentMins >= (5*60 + 30) && currentMins < (9*60)) { targetShift = "05:30-09:30"; } 
+        else if (currentMins >= (9*60) && currentMins <= (9*60 + 15)) { targetShift = "09:00-09:30"; } 
+        else if (currentMins > (9*60 + 15) && currentMins < (9*60 + 30)) { targetShift = "05:30-09:30"; } 
+        else if (currentMins >= (9*60 + 30) && currentMins < (12*60)) { targetShift = "09:30-12:00"; } 
+        else if (currentMins >= (12*60) && currentMins < (13*60)) { targetShift = "12:00-13:00"; } 
+        else if (currentMins >= (13*60) && currentMins < (14*60 + 30)) { targetShift = "13:00-14:30"; } 
+        else if (currentMins >= (14*60 + 30) && currentMins < (17*60 + 30)) { targetShift = "14:30-17:30"; } 
+        else if (currentMins >= (17*60 + 30)) { targetShift = "17:30-21:00"; }
+
+        if (targetShift !== lastSelectedShift) {
+          console.log(`[Auto-Refresh] เปลี่ยนแปลงช่วงเวลาของกะเป็น ${targetShift} กำลังดึงข้อมูล...`);
+          lastSelectedShift = targetShift;
+          
+          setDefaultDate();
+          autoSelectShift();
+          fetchLeadData();
+        }
+      }
+    }, 60000); // ทำการ Loop ตรวจสอบทุกๆ 1 นาที (60000ms)
   }
 </script>
 
