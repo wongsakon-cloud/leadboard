@@ -187,7 +187,8 @@
 </div>
 
 <script>
-  const WEB_APP_API_URL = "https://script.google.com/macros/s/AKfycbwkIE18YIKD1qvlvnPyxcIYe0x6JMqmEIZmJUr-fBfjaILxo7SSsv-gQm9U7XpjzjxOaQ/exec"; 
+  // ⚠️ เปลี่ยนเป็น URL ตัวล่าสุดที่ตั้งค่าสิทธิ์เข้าถึงเป็น Anyone (ทุกคน) เรียบร้อยแล้ว
+  const WEB_APP_API_URL = "https://script.google.com/macros/s/AKfycbx6tZNEZvn9PYbmEqbK6VszI9iLcpYZkb__b_4vp3weuAPE4I41ycZRu6V0MFELJn2S7Q/exec"; 
 
   let currentDailyData = {}; 
 
@@ -204,14 +205,12 @@
     autoSelectShift();
     fetchLeadData(); 
 
-    // === ระบบตั้งเวลาอัปเดตอัตโนมัติ (Auto-Refresh ทุกๆ 1 ชั่วโมง) ===
+    // === ระบบ Auto-Refresh บ่อยขึ้นทุก 5 นาที (300,000 ms) ป้องกันดีเลย์ตอนรีดเปลี่ยนชั่วโมง ===
     setInterval(function() {
-      console.log("Auto-refreshing schedule active...");
-      // ดึงเวลาปัจจุบันเพื่อขยับหน้ากะออนแอร์ตามชั่วโมงจริง
+      console.log("Checking and syncing server database...");
       autoSelectShift();
-      // ดึงข้อมูลใหม่ล่าสุดจาก Google Sheets มาอัปเดตลงหน้าจอ
       fetchLeadData();
-    }, 3600000); // 3,600,000 ms = 1 ชั่วโมง
+    }, 300000); 
   };
 
   function setDefaultDate() {
@@ -255,7 +254,6 @@
     }
     statusMsg.classList.add('hidden');
 
-    // แจ้งสถานะกำลังโหลดแบบเนียนตา ไม่ให้กระทบกับการแสดงผลเดิมจนจอกระพริบหนัก
     const nameDisplay = document.getElementById("nameThDisplay");
     if(nameDisplay.innerText === "-" || nameDisplay.innerText === "ไม่มีข้อมูลเวร") {
        nameDisplay.innerText = "กำลังดึงข้อมูล...";
@@ -280,7 +278,7 @@
         console.error("Fetch error:", error);
         document.getElementById("nameThDisplay").innerText = "ไม่สามารถเชื่อมต่อฐานข้อมูลได้";
         document.getElementById("nameEnDisplay").innerText = "Connection Failed";
-        statusMsg.innerText = "API Error: " + error.message;
+        statusMsg.innerText = "แนะนำให้เช็กการตั้งค่าสิทธิ์ Deploy ใน Apps Script ให้เป็น Anyone: " + error.message;
         statusMsg.classList.remove('hidden');
       });
   }
